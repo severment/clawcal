@@ -1,9 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 580" width="820" height="580">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0a0e27"/>
-      <stop offset="40%" stop-color="#1a1040"/>
-      <stop offset="100%" stop-color="#2d1b69"/>
+    <!-- Blue sky background -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a9ae6"/>
+      <stop offset="40%" stop-color="#3a6bd5"/>
+      <stop offset="100%" stop-color="#2a5aaa"/>
+    </linearGradient>
+    <!-- Wave gradients -->
+    <linearGradient id="wave1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8455e"/>
+      <stop offset="30%" stop-color="#f25c3a"/>
+      <stop offset="60%" stop-color="#f5783a"/>
+      <stop offset="100%" stop-color="#c23070"/>
+    </linearGradient>
+    <linearGradient id="wave2" x1="0" y1="0.3" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#d63384"/>
+      <stop offset="50%" stop-color="#e04050"/>
+      <stop offset="100%" stop-color="#c22860"/>
+    </linearGradient>
+    <linearGradient id="wave3" x1="0.2" y1="0" x2="0.9" y2="0.7">
+      <stop offset="0%" stop-color="#f5a030"/>
+      <stop offset="50%" stop-color="#f0c040"/>
+      <stop offset="100%" stop-color="#f5a030"/>
+    </linearGradient>
+    <linearGradient id="waveWhite" x1="0.3" y1="0" x2="0.8" y2="0.5">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#fff" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="titlebar" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#3a3a3c"/>
@@ -12,20 +35,30 @@
     <filter id="shadow" x="-10%" y="-10%" width="130%" height="140%">
       <feDropShadow dx="0" dy="12" stdDeviation="24" flood-color="#000" flood-opacity="0.5"/>
     </filter>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#7850dc" stop-opacity="0.12"/>
-      <stop offset="70%" stop-color="#7850dc" stop-opacity="0"/>
-    </radialGradient>
     <clipPath id="winClip">
       <rect x="60" y="30" width="700" height="520" rx="12"/>
     </clipPath>
   </defs>
 
-  <!-- Background -->
+  <!-- Blue sky background -->
   <rect width="820" height="580" fill="url(#bg)"/>
 
-  <!-- Subtle glow -->
-  <ellipse cx="410" cy="290" rx="300" ry="300" fill="url(#glow)"/>
+  <!-- Big Sur wave layers -->
+  <!-- Deep magenta/pink wave -->
+  <path d="M-50,280 C100,200 250,180 380,250 C510,320 650,300 780,230 C850,195 870,250 870,280 L870,580 C700,560 450,540 200,560 C50,570 -30,575 -50,580 Z"
+        fill="url(#wave2)" opacity="0.85"/>
+  <!-- Main coral/red wave -->
+  <path d="M-50,240 C120,150 260,120 400,200 C540,280 680,240 800,180 C860,150 870,200 870,240 L870,480 C750,510 500,490 300,440 C120,395 -10,420 -50,460 Z"
+        fill="url(#wave1)" opacity="0.92"/>
+  <!-- Orange/yellow highlight -->
+  <path d="M260,180 C370,155 480,170 580,200 C680,230 770,195 830,175 L810,200 C720,225 620,240 520,215 C420,190 330,195 260,200 Z"
+        fill="url(#wave3)" opacity="0.75"/>
+  <!-- White wisp -->
+  <path d="M230,168 C340,145 480,150 620,180 C720,202 810,175 870,160 L850,175 C790,192 690,205 580,190 C470,175 350,160 250,178 Z"
+        fill="url(#waveWhite)" opacity="0.6"/>
+  <!-- Subtle blue wave top -->
+  <path d="M520,60 C620,48 720,72 830,56 C860,52 870,68 870,60 L870,100 C780,108 680,115 580,98 C510,86 470,90 440,95 Z"
+        fill="#6aade8" opacity="0.3"/>
 
   <!-- Window group -->
   <g filter="url(#shadow)" clip-path="url(#winClip)">
@@ -73,7 +106,7 @@
 
     <!-- All-day event: Landing page shipped (Wed) -->
     <rect x="378" y="121" width="121" height="24" rx="4" fill="#30d158" fill-opacity="0.22"/>
-    <text x="386" y="137" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#6ee093">&#x2705; Landing page shipped</text>
+    <text x="386" y="137" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#6ee093">&#x2705; Deploy to production</text>
 
     <!-- Time grid: starts at y=149, each hour = 40px -->
     <!-- Hour labels in the gutter -->
@@ -115,34 +148,34 @@
     <!-- Weekly digest — Mon 8am, 1hr, teal -->
     <rect x="120" y="151" width="121" height="36" rx="5" fill="#64d2ff" fill-opacity="0.2"/>
     <rect x="120" y="151" width="3" height="36" rx="1" fill="#64d2ff"/>
-    <text x="128" y="165" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#90dfff">&#x1F504; Weekly digest &#x21BB;</text>
+    <text x="128" y="165" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#90dfff">&#x1F504; Weekly standup &#x21BB;</text>
     <text x="128" y="178" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="9" fill="#90dfff" fill-opacity="0.7">8:00 &#x2013; 9:00 AM</text>
 
     <!-- Show HN: utmgate — Mon 9am, 1hr, orange -->
     <rect x="120" y="191" width="121" height="36" rx="5" fill="#ff9f0a" fill-opacity="0.2"/>
     <rect x="120" y="191" width="3" height="36" rx="1" fill="#ff9f0a"/>
-    <text x="128" y="205" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#ffbf60">&#x1F4E3; Show HN: utmgate</text>
+    <text x="128" y="205" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#ffbf60">&#x1F4E3; Post to Hacker News</text>
     <text x="128" y="218" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="9" fill="#ffbf60" fill-opacity="0.7">9:00 &#x2013; 10:00 AM</text>
 
     <!-- Tweet: MyApp v2 launch — Tue 12pm, 30min, blue -->
     <rect x="249" y="311" width="121" height="18" rx="5" fill="#0a84ff" fill-opacity="0.2"/>
     <rect x="249" y="311" width="3" height="18" rx="1" fill="#0a84ff"/>
-    <text x="257" y="324" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#64b5ff">&#x1F426; Tweet: MyApp v2 launch</text>
+    <text x="257" y="324" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#64b5ff">&#x1F426; Tweet: v2.0 announcement</text>
 
     <!-- Reply to HN comments — Tue 3pm, 15min, pink -->
     <rect x="249" y="431" width="121" height="14" rx="5" fill="#ff375f" fill-opacity="0.2"/>
     <rect x="249" y="431" width="3" height="14" rx="1" fill="#ff375f"/>
-    <text x="257" y="442" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#ff7a93">&#x1F4AC; Reply to HN comments</text>
+    <text x="257" y="442" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#ff7a93">&#x1F4AC; Reply to comments</text>
 
     <!-- Check analytics — Wed 12pm, 15min, purple -->
     <rect x="378" y="311" width="121" height="14" rx="5" fill="#af52de" fill-opacity="0.2"/>
     <rect x="378" y="311" width="3" height="14" rx="1" fill="#af52de"/>
-    <text x="386" y="322" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#c98aeb">&#x1F4CA; Check analytics</text>
+    <text x="386" y="322" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#c98aeb">&#x1F4CA; Check launch metrics</text>
 
     <!-- Draft: UTM blog post — Thu 2pm, 30min, yellow -->
     <rect x="507" y="391" width="121" height="18" rx="5" fill="#ffd60a" fill-opacity="0.2"/>
     <rect x="507" y="391" width="3" height="18" rx="1" fill="#ffd60a"/>
-    <text x="515" y="404" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#ffe566">&#x1F4DD; Draft: UTM blog post</text>
+    <text x="515" y="404" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#ffe566">&#x1F4DD; Draft: changelog post</text>
   </g>
 
   <!-- Window border (outside clip so the rounded corners show) -->

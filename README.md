@@ -1,6 +1,6 @@
 # ClawCal -- your agent's activity, in your calendar
 
-![ClawCal hero](assets/hero.svg)
+![ClawCal — Apple Calendar showing agent events with native alerts](assets/hero.png)
 
 <!-- badges -->
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -17,7 +17,7 @@ Not a dashboard. Not a web app. Your calendar -- the one you already have open.
 ### 1. Install
 
 ```bash
-npm install @severment/clawcal
+npm install clawcal
 ```
 
 ### 2. Register
