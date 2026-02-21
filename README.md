@@ -4,7 +4,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-plugin-FF6B00.svg)](#)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#)
-[![92 Tests](https://img.shields.io/badge/tests-92_passing-brightgreen.svg)](#)
+[![100 Tests](https://img.shields.io/badge/tests-100_passing-brightgreen.svg)](#)
 
 Your agent schedules posts, plans launches, and completes tasks around the clock. The only way to see what it's doing is to check the terminal or dig through session logs. ClawCal puts all of that into your calendar. Subscribe once, see everything.
 
@@ -15,9 +15,7 @@ Not a dashboard. Not a web app. Your calendar -- the one you already have open.
 ### 1. Install
 
 ```bash
-cd extensions/
-git clone https://github.com/severment/clawcal.git
-cd clawcal && npm install
+npm install @severment/clawcal
 ```
 
 ### 2. Register
@@ -215,6 +213,7 @@ clawcal/
 │   ├── feed-manager.ts    <-- multi-feed management (combined + per-agent)
 │   ├── calendar.ts        <-- iCal generation, VALARM, file I/O
 │   ├── events.ts          <-- maps gateway events to calendar events
+│   ├── config.ts          <-- deep merge for user config overrides
 │   ├── local-push.ts      <-- macOS Apple Calendar push via osascript
 │   └── types.ts           <-- type definitions
 ├── tests/
@@ -222,6 +221,7 @@ clawcal/
 │   ├── events.test.ts     <-- event mapping, alert defaults (23 tests)
 │   ├── feed-manager.test.ts <-- multi-feed routing (11 tests)
 │   ├── local-push.test.ts <-- local push, AppleScript gen, caching (20 tests)
+│   ├── config.test.ts     <-- deep merge config (8 tests)
 │   └── auth.test.ts       <-- token, password, proxy auth (16 tests)
 ├── README.md
 ├── CONTRIBUTING.md
