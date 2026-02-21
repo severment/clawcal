@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 580" width="820" height="580">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0e27"/>
+      <stop offset="40%" stop-color="#1a1040"/>
+      <stop offset="100%" stop-color="#2d1b69"/>
+    </linearGradient>
+    <linearGradient id="titlebar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a3c"/>
+      <stop offset="100%" stop-color="#2c2c2e"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="24" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7850dc" stop-opacity="0.12"/>
+      <stop offset="70%" stop-color="#7850dc" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="winClip">
+      <rect x="60" y="30" width="700" height="520" rx="12"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="820" height="580" fill="url(#bg)"/>
+
+  <!-- Subtle glow -->
+  <ellipse cx="410" cy="290" rx="300" ry="300" fill="url(#glow)"/>
+
+  <!-- Window group -->
+  <g filter="url(#shadow)" clip-path="url(#winClip)">
+    <!-- Window background -->
+    <rect x="60" y="30" width="700" height="520" rx="12" fill="#1c1c1e"/>
+
+    <!-- Title bar -->
+    <rect x="60" y="30" width="700" height="52" fill="url(#titlebar)"/>
+    <line x1="60" y1="82" x2="760" y2="82" stroke="#000" stroke-opacity="0.4"/>
+
+    <!-- Traffic lights -->
+    <circle cx="82" cy="56" r="6" fill="#ff5f57"/>
+    <circle cx="102" cy="56" r="6" fill="#febc2e"/>
+    <circle cx="122" cy="56" r="6" fill="#28c840"/>
+
+    <!-- Title text -->
+    <text x="410" y="60" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif" font-size="13" font-weight="600" fill="#e5e5ea" letter-spacing="0.02em">Calendar</text>
+
+    <!-- Day headers -->
+    <!-- Gutter: x=60, w=56; Columns: x=116, each w=128.8 (5 cols across 644px) -->
+    <line x1="60" y1="82" x2="760" y2="82" stroke="#38383a"/>
+
+    <!-- Column dividers and header backgrounds -->
+    <rect x="60" y="82" width="56" height="35" fill="#1c1c1e"/>
+    <line x1="116" y1="82" x2="116" y2="550" stroke="#38383a"/>
+
+    <text x="180" y="105" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="11" font-weight="600" fill="#8e8e93" letter-spacing="0.06em">MON</text>
+    <text x="309" y="105" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="11" font-weight="600" fill="#8e8e93" letter-spacing="0.06em">TUE</text>
+    <text x="438" y="105" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="11" font-weight="600" fill="#8e8e93" letter-spacing="0.06em">WED</text>
+    <text x="567" y="105" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="11" font-weight="600" fill="#8e8e93" letter-spacing="0.06em">THU</text>
+    <text x="696" y="105" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="11" font-weight="600" fill="#8e8e93" letter-spacing="0.06em">FRI</text>
+
+    <!-- Column separator lines -->
+    <line x1="245" y1="82" x2="245" y2="550" stroke="#38383a" stroke-opacity="0.5"/>
+    <line x1="374" y1="82" x2="374" y2="550" stroke="#38383a" stroke-opacity="0.5"/>
+    <line x1="503" y1="82" x2="503" y2="550" stroke="#38383a" stroke-opacity="0.5"/>
+    <line x1="632" y1="82" x2="632" y2="550" stroke="#38383a" stroke-opacity="0.5"/>
+
+    <!-- Header bottom line -->
+    <line x1="60" y1="117" x2="760" y2="117" stroke="#38383a"/>
+
+    <!-- All-day row -->
+    <text x="110" y="136" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" fill="#636366">all-day</text>
+    <line x1="60" y1="149" x2="760" y2="149" stroke="#38383a"/>
+
+    <!-- All-day event: Landing page shipped (Wed) -->
+    <rect x="378" y="121" width="121" height="24" rx="4" fill="#30d158" fill-opacity="0.22"/>
+    <text x="386" y="137" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#6ee093">&#x2705; Landing page shipped</text>
+
+    <!-- Time grid: starts at y=149, each hour = 40px -->
+    <!-- Hour labels in the gutter -->
+    <text x="110" y="156" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">8 AM</text>
+    <line x1="116" y1="149" x2="760" y2="149" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="196" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">9 AM</text>
+    <line x1="116" y1="189" x2="760" y2="189" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="236" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">10 AM</text>
+    <line x1="116" y1="229" x2="760" y2="229" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="276" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">11 AM</text>
+    <line x1="116" y1="269" x2="760" y2="269" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="316" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">12 PM</text>
+    <line x1="116" y1="309" x2="760" y2="309" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="356" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">1 PM</text>
+    <line x1="116" y1="349" x2="760" y2="349" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="396" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">2 PM</text>
+    <line x1="116" y1="389" x2="760" y2="389" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="436" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">3 PM</text>
+    <line x1="116" y1="429" x2="760" y2="429" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="476" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">4 PM</text>
+    <line x1="116" y1="469" x2="760" y2="469" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <text x="110" y="516" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#636366">5 PM</text>
+    <line x1="116" y1="509" x2="760" y2="509" stroke="#38383a" stroke-opacity="0.4"/>
+
+    <!-- Events -->
+    <!-- Grid: col start x=116, col width=128.8, hour height=40px, grid top y=149 -->
+    <!-- Mon col: 116-245, Tue: 245-374, Wed: 374-503, Thu: 503-632, Fri: 632-760 -->
+    <!-- 8am=149, 9am=189, 10am=229, 11am=269, 12pm=309, 1pm=349, 2pm=389, 3pm=429 -->
+
+    <!-- Weekly digest — Mon 8am, 1hr, teal -->
+    <rect x="120" y="151" width="121" height="36" rx="5" fill="#64d2ff" fill-opacity="0.2"/>
+    <rect x="120" y="151" width="3" height="36" rx="1" fill="#64d2ff"/>
+    <text x="128" y="165" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#90dfff">&#x1F504; Weekly digest &#x21BB;</text>
+    <text x="128" y="178" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="9" fill="#90dfff" fill-opacity="0.7">8:00 &#x2013; 9:00 AM</text>
+
+    <!-- Show HN: utmgate — Mon 9am, 1hr, orange -->
+    <rect x="120" y="191" width="121" height="36" rx="5" fill="#ff9f0a" fill-opacity="0.2"/>
+    <rect x="120" y="191" width="3" height="36" rx="1" fill="#ff9f0a"/>
+    <text x="128" y="205" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#ffbf60">&#x1F4E3; Show HN: utmgate</text>
+    <text x="128" y="218" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="9" fill="#ffbf60" fill-opacity="0.7">9:00 &#x2013; 10:00 AM</text>
+
+    <!-- Tweet: MyApp v2 launch — Tue 12pm, 30min, blue -->
+    <rect x="249" y="311" width="121" height="18" rx="5" fill="#0a84ff" fill-opacity="0.2"/>
+    <rect x="249" y="311" width="3" height="18" rx="1" fill="#0a84ff"/>
+    <text x="257" y="324" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#64b5ff">&#x1F426; Tweet: MyApp v2 launch</text>
+
+    <!-- Reply to HN comments — Tue 3pm, 15min, pink -->
+    <rect x="249" y="431" width="121" height="14" rx="5" fill="#ff375f" fill-opacity="0.2"/>
+    <rect x="249" y="431" width="3" height="14" rx="1" fill="#ff375f"/>
+    <text x="257" y="442" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#ff7a93">&#x1F4AC; Reply to HN comments</text>
+
+    <!-- Check analytics — Wed 12pm, 15min, purple -->
+    <rect x="378" y="311" width="121" height="14" rx="5" fill="#af52de" fill-opacity="0.2"/>
+    <rect x="378" y="311" width="3" height="14" rx="1" fill="#af52de"/>
+    <text x="386" y="322" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10" font-weight="500" fill="#c98aeb">&#x1F4CA; Check analytics</text>
+
+    <!-- Draft: UTM blog post — Thu 2pm, 30min, yellow -->
+    <rect x="507" y="391" width="121" height="18" rx="5" fill="#ffd60a" fill-opacity="0.2"/>
+    <rect x="507" y="391" width="3" height="18" rx="1" fill="#ffd60a"/>
+    <text x="515" y="404" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="10.5" font-weight="500" fill="#ffe566">&#x1F4DD; Draft: UTM blog post</text>
+  </g>
+
+  <!-- Window border (outside clip so the rounded corners show) -->
+  <rect x="60" y="30" width="700" height="520" rx="12" fill="none" stroke="#fff" stroke-opacity="0.08" stroke-width="0.5"/>
+</svg>

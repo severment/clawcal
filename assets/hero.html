@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCal — Apple Calendar Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1040 40%, #2d1b69 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    overflow: hidden;
+  }
+
+  .glow {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(120, 80, 220, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .window {
+    position: relative;
+    z-index: 1;
+    width: 820px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 25px 60px rgba(0, 0, 0, 0.5),
+      0 8px 20px rgba(0, 0, 0, 0.3),
+      0 0 0 0.5px rgba(255, 255, 255, 0.08);
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+    animation: windowIn 0.6s ease-out 0.2s forwards;
+  }
+
+  @keyframes windowIn {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Title bar */
+  .titlebar {
+    height: 52px;
+    background: linear-gradient(180deg, #3a3a3c 0%, #2c2c2e 100%);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    position: relative;
+  }
+
+  .traffic-lights {
+    display: flex;
+    gap: 8px;
+  }
+
+  .traffic-lights span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: block;
+  }
+
+  .tl-red { background: #ff5f57; }
+  .tl-yellow { background: #febc2e; }
+  .tl-green { background: #28c840; }
+
+  .titlebar-text {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #e5e5ea;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* Calendar body */
+  .calendar {
+    background: #1c1c1e;
+    display: grid;
+    grid-template-columns: 60px repeat(5, 1fr);
+    grid-template-rows: auto;
+    min-height: 500px;
+    position: relative;
+  }
+
+  /* Day header row */
+  .day-header-row {
+    display: contents;
+  }
+
+  .corner {
+    background: #1c1c1e;
+    border-bottom: 1px solid #38383a;
+    border-right: 1px solid #38383a;
+  }
+
+  .day-header {
+    text-align: center;
+    padding: 10px 0 8px;
+    color: #8e8e93;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: #1c1c1e;
+    border-bottom: 1px solid #38383a;
+    border-right: 1px solid rgba(56, 56, 58, 0.5);
+  }
+
+  .day-header:last-child { border-right: none; }
+
+  /* All-day row */
+  .allday-gutter {
+    padding: 6px 8px;
+    text-align: right;
+    color: #636366;
+    font-size: 10px;
+    border-bottom: 1px solid #38383a;
+    border-right: 1px solid #38383a;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    background: #1c1c1e;
+  }
+
+  .allday-row {
+    grid-column: 2 / -1;
+    border-bottom: 1px solid #38383a;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 4px 0;
+    min-height: 32px;
+    position: relative;
+    background: #1c1c1e;
+  }
+
+  .allday-event {
+    grid-column: 3 / 4;
+    margin: 2px 3px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  /* Time grid */
+  .time-grid {
+    display: contents;
+  }
+
+  .hour-label {
+    text-align: right;
+    padding: 0 8px;
+    color: #636366;
+    font-size: 10px;
+    font-weight: 500;
+    border-right: 1px solid #38383a;
+    position: relative;
+    height: 44px;
+  }
+
+  .hour-label span {
+    position: relative;
+    top: -7px;
+  }
+
+  .hour-cells {
+    display: contents;
+  }
+
+  .hour-cell {
+    border-bottom: 1px solid rgba(56, 56, 58, 0.4);
+    border-right: 1px solid rgba(56, 56, 58, 0.3);
+    height: 44px;
+    position: relative;
+  }
+
+  .hour-cell:last-child { border-right: none; }
+
+  /* Events container — overlays the grid */
+  .events-layer {
+    position: absolute;
+    top: 0;
+    left: 60px;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+
+  .event {
+    position: absolute;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.3;
+    overflow: hidden;
+    pointer-events: auto;
+    cursor: default;
+    opacity: 0;
+    transform: translateY(10px);
+    border-left: 3px solid;
+  }
+
+  .event .event-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .event .event-time {
+    font-size: 9px;
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+
+  /* Event colors */
+  .event-blue {
+    background: rgba(10, 132, 255, 0.2);
+    border-left-color: #0a84ff;
+    color: #64b5ff;
+  }
+
+  .event-orange {
+    background: rgba(255, 159, 10, 0.2);
+    border-left-color: #ff9f0a;
+    color: #ffbf60;
+  }
+
+  .event-green {
+    background: rgba(48, 209, 88, 0.2);
+    border-left-color: #30d158;
+    color: #6ee093;
+  }
+
+  .event-purple {
+    background: rgba(175, 82, 222, 0.2);
+    border-left-color: #af52de;
+    color: #c98aeb;
+  }
+
+  .event-teal {
+    background: rgba(100, 210, 255, 0.2);
+    border-left-color: #64d2ff;
+    color: #90dfff;
+  }
+
+  .event-yellow {
+    background: rgba(255, 214, 10, 0.2);
+    border-left-color: #ffd60a;
+    color: #ffe566;
+  }
+
+  .event-pink {
+    background: rgba(255, 55, 95, 0.2);
+    border-left-color: #ff375f;
+    color: #ff7a93;
+  }
+
+  .allday-green {
+    background: rgba(48, 209, 88, 0.22);
+    color: #6ee093;
+  }
+
+  /* Stagger animation */
+  @keyframes eventIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .event-anim-1 { animation: eventIn 0.4s ease-out 0.6s forwards; }
+  .event-anim-2 { animation: eventIn 0.4s ease-out 0.75s forwards; }
+  .event-anim-3 { animation: eventIn 0.4s ease-out 0.9s forwards; }
+  .event-anim-4 { animation: eventIn 0.4s ease-out 1.05s forwards; }
+  .event-anim-5 { animation: eventIn 0.4s ease-out 1.2s forwards; }
+  .event-anim-6 { animation: eventIn 0.4s ease-out 1.35s forwards; }
+  .event-anim-7 { animation: eventIn 0.4s ease-out 1.5s forwards; }
+
+  /* Recurring icon */
+  .recurring {
+    display: inline-block;
+    font-size: 9px;
+    opacity: 0.6;
+    margin-left: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<div class="window">
+  <div class="titlebar">
+    <div class="traffic-lights">
+      <span class="tl-red"></span>
+      <span class="tl-yellow"></span>
+      <span class="tl-green"></span>
+    </div>
+    <div class="titlebar-text">Calendar</div>
+  </div>
+
+  <div class="calendar">
+    <!-- Day header row -->
+    <div class="corner"></div>
+    <div class="day-header">Mon</div>
+    <div class="day-header">Tue</div>
+    <div class="day-header">Wed</div>
+    <div class="day-header">Thu</div>
+    <div class="day-header">Fri</div>
+
+    <!-- All-day row -->
+    <div class="allday-gutter">all-day</div>
+    <div class="allday-row">
+      <div class="allday-event allday-green event-anim-3" style="grid-column: 3/4;">&#x2705; Landing page shipped</div>
+    </div>
+
+    <!-- Hour rows: 8am - 6pm (10 rows) -->
+    <!-- 8 AM -->
+    <div class="hour-label"><span>8 AM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 9 AM -->
+    <div class="hour-label"><span>9 AM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 10 AM -->
+    <div class="hour-label"><span>10 AM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 11 AM -->
+    <div class="hour-label"><span>11 AM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 12 PM -->
+    <div class="hour-label"><span>12 PM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 1 PM -->
+    <div class="hour-label"><span>1 PM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 2 PM -->
+    <div class="hour-label"><span>2 PM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 3 PM -->
+    <div class="hour-label"><span>3 PM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 4 PM -->
+    <div class="hour-label"><span>4 PM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 5 PM -->
+    <div class="hour-label"><span>5 PM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+    <!-- 6 PM (last) -->
+    <div class="hour-label"><span>6 PM</span></div>
+    <div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div><div class="hour-cell"></div>
+
+    <!-- Events layer — positioned absolutely over the grid -->
+    <!-- Grid math: each column is (100% - 60px) / 5 = ~20% each -->
+    <!-- Each hour row = 44px. Row 0 = 8am, so 9am = 44px, 12pm = 176px, etc. -->
+    <!-- allday row height ~32px + borders, day header ~35px. Total offset before grid ~68px -->
+    <!-- Columns: Mon=0%, Tue=20%, Wed=40%, Thu=60%, Fri=80%; width each ~19.4% with margin -->
+    <div class="events-layer" style="top: 68px;">
+      <!-- Weekly digest — Mon 8am, 1hr, teal -->
+      <div class="event event-teal event-anim-1"
+           style="left: 0.5%; width: 19%; top: 0px; height: 42px;">
+        <div class="event-title">&#x1F504; Weekly digest <span class="recurring">&#x21BB;</span></div>
+        <div class="event-time">8:00 &#x2013; 9:00 AM</div>
+      </div>
+
+      <!-- Show HN: utmgate — Mon 9am, 1hr, orange -->
+      <div class="event event-orange event-anim-2"
+           style="left: 0.5%; width: 19%; top: 44px; height: 42px;">
+        <div class="event-title">&#x1F4E3; Show HN: utmgate</div>
+        <div class="event-time">9:00 &#x2013; 10:00 AM</div>
+      </div>
+
+      <!-- Tweet: MyApp v2 launch — Tue 12pm, 30min, blue -->
+      <div class="event event-blue event-anim-4"
+           style="left: 20.5%; width: 19%; top: 176px; height: 21px;">
+        <div class="event-title">&#x1F426; Tweet: MyApp v2 launch</div>
+      </div>
+
+      <!-- Reply to HN comments — Tue 3pm, 15min, pink -->
+      <div class="event event-pink event-anim-7"
+           style="left: 20.5%; width: 19%; top: 308px; height: 11px;">
+        <div class="event-title">&#x1F4AC; Reply to HN comments</div>
+      </div>
+
+      <!-- Check analytics — Wed 12pm, 15min, purple -->
+      <div class="event event-purple event-anim-5"
+           style="left: 40.5%; width: 19%; top: 176px; height: 11px;">
+        <div class="event-title">&#x1F4CA; Check analytics</div>
+      </div>
+
+      <!-- Draft: UTM blog post — Thu 2pm, 30min, yellow -->
+      <div class="event event-yellow event-anim-6"
+           style="left: 60.5%; width: 19%; top: 264px; height: 21px;">
+        <div class="event-title">&#x1F4DD; Draft: UTM blog post</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

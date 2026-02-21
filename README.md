@@ -1,5 +1,7 @@
 # ClawCal -- your agent's activity, in your calendar
 
+![ClawCal hero](assets/hero.svg)
+
 <!-- badges -->
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-plugin-FF6B00.svg)](#)
