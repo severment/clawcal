@@ -4,7 +4,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-plugin-FF6B00.svg)](#)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#)
-[![72 Tests](https://img.shields.io/badge/tests-72_passing-brightgreen.svg)](#)
+[![92 Tests](https://img.shields.io/badge/tests-92_passing-brightgreen.svg)](#)
 
 Your agent schedules posts, plans launches, and completes tasks around the clock. The only way to see what it's doing is to check the terminal or dig through session logs. ClawCal puts all of that into your calendar. Subscribe once, see everything.
 
@@ -115,10 +115,14 @@ extensions:
 
 ```
 Gateway events --> listener.ts --> events.ts --> feed-manager.ts --> .ics files
-                                                                        |
-Agent tool call --> events.ts --> feed-manager.ts -----> HTTP routes ----+
-                                                            |
-                                                     Calendar app polls
+                                                      |                 |
+Agent tool call --> events.ts --> feed-manager.ts -----+---> HTTP routes
+                                                      |          |
+                                                      |   Calendar app polls
+                                                      |
+                                                local-push.ts --> osascript
+                                                      |
+                                               Apple Calendar (native alerts)
 ```
 
 Zero runtime dependencies. iCal is a text format -- generating it requires no library.
@@ -140,7 +144,20 @@ Running on a VPS? The gateway should be behind HTTPS. ClawCal doesn't add its ow
 
 ## Alerts
 
-Every event type has configurable default alerts (VALARM). Your Mac and phone get notified automatically.
+Every event type has configurable default alerts (VALARM). Your phone gets notified automatically via the ICS feed.
+
+### macOS local push
+
+Apple Calendar's `calaccessd` silently drops VALARM alerts from subscribed ICS feeds. Events show up but you never get notified. ClawCal works around this by pushing events directly into local Apple Calendar calendars via `osascript`, where alerts fire as native macOS notifications.
+
+This happens automatically on macOS alongside the ICS feeds. On Linux the local push is a no-op -- alerts still work via other calendar apps that poll the feed.
+
+```yaml
+extensions:
+  clawcal:
+    localPush:
+      enabled: true   # default, no-ops on non-macOS
+```
 
 | Event type | Default alerts |
 |---|---|
@@ -172,6 +189,7 @@ extensions:
 | `enabled` | boolean | `true` | Enable/disable the plugin |
 | `feeds.combined` | boolean | `true` | Generate combined all-agents feed |
 | `feeds.per_agent` | boolean | `true` | Generate per-agent feeds |
+| `localPush.enabled` | boolean | `true` | Push events to local Apple Calendar (macOS only) |
 | `events.scheduled_posts` | boolean | `true` | Track scheduled social posts |
 | `events.launch_sequences` | boolean | `true` | Track multi-step launch plans |
 | `events.task_completions` | boolean | `true` | Track completed tasks |
@@ -197,11 +215,13 @@ clawcal/
 │   ├── feed-manager.ts    <-- multi-feed management (combined + per-agent)
 │   ├── calendar.ts        <-- iCal generation, VALARM, file I/O
 │   ├── events.ts          <-- maps gateway events to calendar events
+│   ├── local-push.ts      <-- macOS Apple Calendar push via osascript
 │   └── types.ts           <-- type definitions
 ├── tests/
 │   ├── calendar.test.ts   <-- iCal output, alerts, persistence (22 tests)
 │   ├── events.test.ts     <-- event mapping, alert defaults (23 tests)
 │   ├── feed-manager.test.ts <-- multi-feed routing (11 tests)
+│   ├── local-push.test.ts <-- local push, AppleScript gen, caching (20 tests)
 │   └── auth.test.ts       <-- token, password, proxy auth (16 tests)
 ├── README.md
 ├── CONTRIBUTING.md

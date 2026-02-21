@@ -46,14 +46,19 @@ clawcal/
 │   ├── index.ts          ← plugin entry point, registers with gateway
 │   ├── listener.ts       ← hooks into gateway events
 │   ├── calendar.ts       ← iCal generation and file management
+│   ├── feed-manager.ts   ← multi-feed management (combined + per-agent)
 │   ├── events.ts         ← maps OpenClaw events to calendar events
+│   ├── local-push.ts     ← macOS Apple Calendar push via osascript
 │   └── types.ts          ← type definitions
 ├── README.md
 ├── CONTRIBUTING.md
 ├── LICENSE               ← MIT
 └── tests/
     ├── calendar.test.ts  ← iCal output correctness
-    └── events.test.ts    ← event mapping logic
+    ├── events.test.ts    ← event mapping logic
+    ├── feed-manager.test.ts ← multi-feed routing
+    ├── local-push.test.ts   ← local push, AppleScript generation
+    └── auth.test.ts         ← gateway auth integration
 ```
 
 ## Event Types
