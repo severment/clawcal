@@ -1,9 +1,10 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { FeedManager } from './feed-manager';
-import { LocalCalendarPush } from './local-push';
-import { registerListeners } from './listener';
-import { fromToolCall } from './events';
-import { CalendarConfig, ScheduleToolParams } from './types';
+import { FeedManager } from './feed-manager.js';
+import { LocalCalendarPush } from './local-push.js';
+import { registerListeners } from './listener.js';
+import { fromToolCall } from './events.js';
+import { CalendarConfig, ScheduleToolParams } from './types.js';
+import { mergeConfig } from './config.js';
 
 /**
  * Minimal plugin API interface — matches OpenClawPluginApi from plugin-sdk.
@@ -75,7 +76,7 @@ const DEFAULT_CONFIG: CalendarConfig = {
  * Plugin entry point. Called by OpenClaw when the extension loads.
  */
 export function register(api: PluginApi, userConfig?: Partial<CalendarConfig>): FeedManager {
-  const config: CalendarConfig = { ...DEFAULT_CONFIG, ...userConfig };
+  const config: CalendarConfig = userConfig ? mergeConfig(DEFAULT_CONFIG, userConfig) : DEFAULT_CONFIG;
   const directory = api.resolvePath(config.file_directory);
 
   const localPush = new LocalCalendarPush(config.localPush.enabled);
@@ -199,7 +200,7 @@ export function register(api: PluginApi, userConfig?: Partial<CalendarConfig>): 
 export function checkAuth(
   req: IncomingMessage,
   res: ServerResponse,
-  authConfig?: PluginApi['config']['gateway']['auth'],
+  authConfig?: NonNullable<PluginApi['config']['gateway']>['auth'],
 ): boolean {
   // No auth configured — allow (user chose this deliberately)
   if (!authConfig || !authConfig.mode || authConfig.mode === 'none') {
@@ -292,7 +293,7 @@ function serveICS(res: ServerResponse, ics: string, filename: string): void {
 }
 
 
-export { CalendarManager } from './calendar';
-export { FeedManager } from './feed-manager';
-export * from './types';
-export * from './events';
+export { CalendarManager } from './calendar.js';
+export { FeedManager } from './feed-manager.js';
+export * from './types.js';
+export * from './events.js';
