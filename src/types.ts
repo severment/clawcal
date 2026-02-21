@@ -27,11 +27,16 @@ export interface FeedsConfig {
   per_agent: boolean;  // separate feed per agent
 }
 
+export interface LocalPushConfig {
+  enabled: boolean;
+}
+
 export interface CalendarConfig {
   enabled: boolean;
   file: string;             // legacy single-file path (used when feeds not configured)
   file_directory: string;   // directory for multi-feed output
   feeds: FeedsConfig;
+  localPush: LocalPushConfig;
   events: EventTypeConfig;
   defaults: DefaultsConfig;
   cleanup: CleanupConfig;
@@ -75,6 +80,9 @@ export interface ScheduleToolParams {
   category?: string;
   description?: string;
   allDay?: boolean;
+  agent?: string;
+  project?: string;
+  alertMinutes?: number;
 }
 
 // Gateway event types — matches OpenClaw plugin-sdk

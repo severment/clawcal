@@ -1,6 +1,8 @@
 import { join } from 'path';
+import { readdirSync, existsSync } from 'fs';
 import { CalendarManager } from './calendar';
 import { CalendarEvent, FeedsConfig } from './types';
+import { LocalCalendarPush } from './local-push';
 
 /**
  * Manages multiple calendar feeds — one combined feed with all agents,
@@ -19,16 +21,33 @@ export class FeedManager {
   private agentFeeds: Map<string, CalendarManager> = new Map();
   private directory: string;
   private feedsConfig: FeedsConfig;
+  private localPush: LocalCalendarPush | null = null;
 
-  constructor(directory: string, feedsConfig: FeedsConfig) {
+  constructor(directory: string, feedsConfig: FeedsConfig, localPush?: LocalCalendarPush) {
     this.directory = directory;
     this.feedsConfig = feedsConfig;
+    this.localPush = localPush ?? null;
 
     if (feedsConfig.combined) {
       this.combined = new CalendarManager(
         join(directory, 'all-agents.ics'),
         'OpenClaw — All Agents'
       );
+    }
+
+    // Load existing per-agent feeds from disk
+    if (feedsConfig.per_agent && existsSync(directory)) {
+      for (const file of readdirSync(directory)) {
+        if (!file.endsWith('.ics') || file === 'all-agents.ics' || file === 'agent-calendar.ics') continue;
+        const agentId = file.replace(/\.ics$/, '');
+        const feed = new CalendarManager(
+          join(directory, file),
+          `OpenClaw — ${agentId}`
+        );
+        if (feed.getAllEvents().length > 0) {
+          this.agentFeeds.set(agentId, feed);
+        }
+      }
     }
   }
 
@@ -43,6 +62,11 @@ export class FeedManager {
       const agentCal = this.getOrCreateAgentFeed(event.agent);
       agentCal.addEvent(event);
     }
+
+    // Push to local Apple Calendar
+    if (this.localPush) {
+      this.localPush.pushEvent(event);
+    }
   }
 
   updateEvent(uid: string, updates: Partial<CalendarEvent>): void {
@@ -56,13 +80,37 @@ export class FeedManager {
         feed.updateEvent(uid, updates);
       }
     }
+
+    // Push updated event to local Apple Calendar
+    if (this.localPush) {
+      const updated = this.getEvent(uid);
+      if (updated) {
+        this.localPush.updateEvent(updated);
+      }
+    }
   }
 
   cancelEvent(uid: string): void {
+    // Grab event before it's updated so we can remove from local calendar
+    if (this.localPush) {
+      const event = this.getEvent(uid);
+      if (event?.agent) {
+        this.localPush.removeEvent(event.agent, event.title);
+      }
+    }
+
     this.updateEvent(uid, { status: 'CANCELLED' });
   }
 
   removeEvent(uid: string): void {
+    // Grab event before deletion so we can remove from local calendar
+    if (this.localPush) {
+      const event = this.getEvent(uid);
+      if (event?.agent) {
+        this.localPush.removeEvent(event.agent, event.title);
+      }
+    }
+
     if (this.combined) {
       this.combined.removeEvent(uid);
     }

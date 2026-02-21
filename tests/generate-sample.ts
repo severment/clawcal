@@ -8,11 +8,11 @@
  *   ~/.openclaw/clawcal/marketing-agent.ics    ← marketing agent only
  *   ~/.openclaw/clawcal/dev-agent.ics          ← dev agent only
  */
+import { homedir } from 'os';
 import { FeedManager } from '../src/feed-manager';
 import { fromScheduleEvent, fromTaskCompleteEvent, createCheckinEvents, fromCronEvent } from '../src/events';
 
-const homedir = process.env.HOME || '';
-const directory = `${homedir}/.openclaw/clawcal`;
+const directory = `${homedir()}/.openclaw/clawcal`;
 
 const feeds = new FeedManager(directory, { combined: true, per_agent: true });
 const defaults = {

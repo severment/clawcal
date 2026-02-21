@@ -20,7 +20,13 @@
     "agent",
     "marketing"
   ],
+  "type": "module",
   "license": "MIT",
+  "openclaw": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
   "devDependencies": {
     "typescript": "^5.4.0",
     "vitest": "^3.0.0"

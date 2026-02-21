@@ -107,9 +107,17 @@ export function fromToolCall(params: {
   category?: string;
   description?: string;
   allDay?: boolean;
-}): CalendarEvent {
+  agent?: string;
+  project?: string;
+  alertMinutes?: number;
+}, defaults?: DefaultsConfig): CalendarEvent {
   const emoji = params.category ? (EMOJI[params.category] || '') : '';
   const title = emoji ? `${emoji} ${params.title}` : params.title;
+
+  // Explicit alertMinutes overrides category defaults
+  const alerts = params.alertMinutes !== undefined
+    ? [{ minutes: params.alertMinutes }]
+    : (params.category && defaults ? alertsForCategory(params.category, defaults) : undefined);
 
   return {
     uid: generateUID(),
@@ -119,7 +127,10 @@ export function fromToolCall(params: {
     duration: params.allDay ? undefined : (params.duration || 15),
     allDay: params.allDay || false,
     category: params.category,
+    agent: params.agent,
+    project: params.project,
     status: 'PLANNED',
+    alerts,
   };
 }
 

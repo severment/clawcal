@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { FeedManager } from './feed-manager';
+import { LocalCalendarPush } from './local-push';
 import { registerListeners } from './listener';
 import { fromToolCall } from './events';
 import { CalendarConfig, ScheduleToolParams } from './types';
@@ -25,8 +26,10 @@ interface PluginApi {
     };
   };
   registerHttpRoute(params: { path: string; handler: (req: IncomingMessage, res: ServerResponse) => void }): void;
+  registerHttpHandler(handler: (req: IncomingMessage, res: ServerResponse) => boolean | Promise<boolean>): void;
   registerTool(tool: any): void;
   registerHook(events: string | string[], handler: (data: any) => void): void;
+  resolvePath(input: string): string;
 }
 
 const DEFAULT_CONFIG: CalendarConfig = {
@@ -36,6 +39,9 @@ const DEFAULT_CONFIG: CalendarConfig = {
   feeds: {
     combined: true,
     per_agent: true,
+  },
+  localPush: {
+    enabled: true,
   },
   events: {
     scheduled_posts: true,
@@ -70,9 +76,10 @@ const DEFAULT_CONFIG: CalendarConfig = {
  */
 export function register(api: PluginApi, userConfig?: Partial<CalendarConfig>): FeedManager {
   const config: CalendarConfig = { ...DEFAULT_CONFIG, ...userConfig };
-  const directory = resolvePath(config.file_directory);
+  const directory = api.resolvePath(config.file_directory);
 
-  const feeds = new FeedManager(directory, config.feeds);
+  const localPush = new LocalCalendarPush(config.localPush.enabled);
+  const feeds = new FeedManager(directory, config.feeds, localPush);
 
   if (!config.enabled) {
     return feeds;
@@ -103,36 +110,31 @@ export function register(api: PluginApi, userConfig?: Partial<CalendarConfig>): 
     });
   }
 
-  // Per-agent feeds: /clawcal/feed/:agentId.ics
+  // Per-agent feeds + feed listing via raw HTTP handler (no param routes)
   if (config.feeds.per_agent) {
-    api.registerHttpRoute({
-      path: '/clawcal/feed/:agentId.ics',
-      handler: (req, res) => {
-        if (!checkAuth(req, res, authConfig)) return;
+    api.registerHttpHandler((req, res) => {
+      const url = req.url || '';
 
-        const agentId = (req as any).params?.agentId;
-        if (!agentId) {
-          res.statusCode = 400;
-          res.end('Missing agent ID');
-          return;
-        }
+      // /clawcal/feed/<agentId>.ics
+      const agentMatch = url.match(/^\/clawcal\/feed\/([^/]+)\.ics$/);
+      if (agentMatch) {
+        if (!checkAuth(req, res, authConfig)) return true;
 
+        const agentId = decodeURIComponent(agentMatch[1]);
         const agentFeed = feeds.getAgentFeed(agentId);
         if (!agentFeed) {
           res.statusCode = 404;
           res.end(`No feed found for agent "${agentId}"`);
-          return;
+          return true;
         }
 
         serveICS(res, agentFeed.toICS(), `${agentId}.ics`);
-      },
-    });
+        return true;
+      }
 
-    // List available agent feeds: /clawcal/feeds
-    api.registerHttpRoute({
-      path: '/clawcal/feeds',
-      handler: (req, res) => {
-        if (!checkAuth(req, res, authConfig)) return;
+      // /clawcal/feeds
+      if (url === '/clawcal/feeds') {
+        if (!checkAuth(req, res, authConfig)) return true;
 
         const agents = feeds.getAgentIds();
         const response = {
@@ -144,26 +146,39 @@ export function register(api: PluginApi, userConfig?: Partial<CalendarConfig>): 
         };
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(response, null, 2));
-      },
+        return true;
+      }
+
+      return false; // not our route
     });
   }
 
   // Register the clawcal_schedule tool for agents
   api.registerTool({
     name: 'clawcal_schedule',
-    description: 'Add an event to the marketing calendar',
+    label: 'Calendar Schedule',
+    description: 'Add an event to the agent calendar',
     parameters: {
-      title: { type: 'string', required: true, description: 'Event title' },
-      date: { type: 'string', required: true, description: 'ISO 8601 date/time' },
-      duration: { type: 'number', description: 'Duration in minutes (default 15)' },
-      category: { type: 'string', description: 'Event category: post, launch, review, task, automation, draft, reminder' },
-      description: { type: 'string', description: 'Event description with context and links' },
-      allDay: { type: 'boolean', description: 'Whether this is an all-day event' },
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Event title' },
+        date: { type: 'string', description: 'ISO 8601 date/time' },
+        duration: { type: 'number', description: 'Duration in minutes (default 15)' },
+        category: { type: 'string', description: 'Event category: post, launch, review, task, automation, draft, reminder' },
+        description: { type: 'string', description: 'Event description with context and links' },
+        allDay: { type: 'boolean', description: 'Whether this is an all-day event' },
+        agent: { type: 'string', description: 'Agent ID (e.g. "marketing-agent"). Required for per-agent feeds.' },
+        project: { type: 'string', description: 'Project or workspace name' },
+        alertMinutes: { type: 'number', description: 'Alert N minutes before event (overrides category default)' },
+      },
+      required: ['title', 'date', 'agent'],
     },
-    handler: (params: ScheduleToolParams) => {
-      const event = fromToolCall(params);
+    async execute(_toolCallId: string, params: ScheduleToolParams) {
+      const event = fromToolCall(params, config.defaults);
       feeds.addEvent(event);
-      return { success: true, uid: event.uid, message: `Added "${event.title}" to calendar` };
+      return {
+        content: [{ type: 'text' as const, text: JSON.stringify({ success: true, uid: event.uid, message: `Added "${event.title}" to calendar` }) }],
+      };
     },
   });
 
@@ -276,13 +291,6 @@ function serveICS(res: ServerResponse, ics: string, filename: string): void {
   res.end(ics);
 }
 
-function resolvePath(filepath: string): string {
-  if (filepath.startsWith('~/')) {
-    const home = process.env.HOME || process.env.USERPROFILE || '';
-    return filepath.replace('~', home);
-  }
-  return filepath;
-}
 
 export { CalendarManager } from './calendar';
 export { FeedManager } from './feed-manager';

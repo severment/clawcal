@@ -1,0 +1,12 @@
+{
+  "id": "clawcal",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      }
+    }
+  }
+}
