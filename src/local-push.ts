@@ -1,5 +1,5 @@
 import { execFile } from 'child_process';
-import { CalendarEvent } from './types';
+import { CalendarEvent } from './types.js';
 
 const OSASCRIPT_TIMEOUT = 10_000;
 

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
-import { CalendarEvent, EventAlert, EventStatus } from './types';
+import { CalendarEvent, EventAlert, EventStatus } from './types.js';
 
 /**
  * Manages the .ics file. Handles iCal formatting, UID management,

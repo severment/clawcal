@@ -1,5 +1,5 @@
-import { fromScheduleEvent, fromTaskCompleteEvent, fromCronEvent, createCheckinEvents } from './events';
-import { CalendarConfig, CalendarEvent, GatewayScheduleEvent, GatewayTaskCompleteEvent, GatewayCronEvent, GatewayScheduleUpdateEvent, GatewayScheduleCancelEvent } from './types';
+import { fromScheduleEvent, fromTaskCompleteEvent, fromCronEvent, createCheckinEvents } from './events.js';
+import { CalendarConfig, CalendarEvent, GatewayScheduleEvent, GatewayTaskCompleteEvent, GatewayCronEvent, GatewayScheduleUpdateEvent, GatewayScheduleCancelEvent } from './types.js';
 
 /**
  * Minimal plugin API interface for hook registration.

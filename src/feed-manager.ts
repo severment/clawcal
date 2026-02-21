@@ -1,8 +1,8 @@
 import { join } from 'path';
 import { readdirSync, existsSync } from 'fs';
-import { CalendarManager } from './calendar';
-import { CalendarEvent, FeedsConfig } from './types';
-import { LocalCalendarPush } from './local-push';
+import { CalendarManager } from './calendar.js';
+import { CalendarEvent, FeedsConfig } from './types.js';
+import { LocalCalendarPush } from './local-push.js';
 
 /**
  * Manages multiple calendar feeds — one combined feed with all agents,

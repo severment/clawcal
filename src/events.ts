@@ -1,4 +1,4 @@
-import { CalendarEvent, EventAlert, GatewayScheduleEvent, GatewayTaskCompleteEvent, GatewayCronEvent, DefaultsConfig } from './types';
+import { CalendarEvent, EventAlert, GatewayScheduleEvent, GatewayTaskCompleteEvent, GatewayCronEvent, DefaultsConfig } from './types.js';
 
 const EMOJI: Record<string, string> = {
   post: '🐦',
