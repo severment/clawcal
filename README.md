@@ -37,7 +37,9 @@ That's it. Events start flowing the moment the gateway boots.
 
 ### 3. Subscribe
 
-Open your calendar app and subscribe to the feed URL:
+**macOS** — events are pushed directly into Apple Calendar by default (with native alerts). No subscription needed.
+
+**Other platforms / calendar apps** — subscribe to the feed URL:
 
 ```
 http://localhost:18789/clawcal/feed.ics
@@ -45,9 +47,9 @@ http://localhost:18789/clawcal/feed.ics
 
 | App | How |
 |---|---|
-| **Apple Calendar** | File > New Calendar Subscription > paste URL |
 | **Google Calendar** | Other calendars (+) > From URL > paste URL |
 | **Fantastical** | File > New Calendar Subscription > paste URL |
+| **Any calendar app** | Add subscription by URL |
 
 Your calendar app polls periodically. New events appear automatically as the agent works.
 
