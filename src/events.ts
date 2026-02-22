@@ -165,6 +165,8 @@ function alertsForCategory(category: string, defaults: DefaultsConfig): EventAle
  * Build a single daily aggregate event rolling up task completions for one agent.
  * Deterministic UID means same-day updates increment SEQUENCE via updateEvent().
  */
+const MAX_AGGREGATE_DESCRIPTION_LINES = 25;
+
 export function buildDailyTaskAggregate(
   agentId: string,
   date: Date,
@@ -173,10 +175,18 @@ export function buildDailyTaskAggregate(
   const dateStr = date.toISOString().slice(0, 10);
   const count = tasks.length;
   const noun = count === 1 ? 'task' : 'tasks';
+
+  const shown = tasks.slice(0, MAX_AGGREGATE_DESCRIPTION_LINES);
+  const remaining = count - shown.length;
+  const lines = shown.map(t => `- ${t.summary}`);
+  if (remaining > 0) {
+    lines.push(`+ ${remaining} more`);
+  }
+
   return {
     uid: `daily-tasks-${agentId}-${dateStr}`,
     title: `Shipped ${count} ${noun} -- ${agentId}`,
-    description: tasks.map(t => `- ${t.summary}`).join('\n'),
+    description: lines.join('\n'),
     start: date,
     allDay: true,
     category: 'completed',

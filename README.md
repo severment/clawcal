@@ -6,7 +6,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-plugin-FF6B00.svg)](#)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#)
-[![123 Tests](https://img.shields.io/badge/tests-123_passing-brightgreen.svg)](#)
+[![126 Tests](https://img.shields.io/badge/tests-126_passing-brightgreen.svg)](#)
 
 Your agent schedules posts, plans launches, and completes tasks around the clock. The only way to see what it's doing is to check the terminal or dig through session logs. ClawCal puts all of that into your calendar. Subscribe once, see everything.
 
@@ -52,6 +52,31 @@ http://localhost:18789/clawcal/feed.ics
 | **Fantastical** | File > New Calendar Subscription > paste URL |
 
 Your calendar app polls periodically. New events appear automatically as the agent works.
+
+### Recommended starter config
+
+If your agent completes many tasks per day, aggregate them into a daily summary to avoid calendar noise:
+
+```json5
+// ~/.openclaw/openclaw.json
+{
+  plugins: {
+    entries: {
+      clawcal: {
+        enabled: true,
+        config: {
+          taskCompletions: {
+            mode: "off",
+            aggregate: "daily"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+This tracks scheduled posts, launches, reminders, and check-ins as individual events, but rolls task completions into one "Shipped N tasks" event per agent per day.
 
 ## What shows up
 
@@ -314,8 +339,8 @@ clawcal/
 │   ├── local-push.ts      <-- macOS Apple Calendar push via osascript
 │   └── types.ts           <-- type definitions
 ├── tests/
-│   ├── calendar.test.ts   <-- iCal output, alerts, URL, persistence (25 tests)
-│   ├── events.test.ts     <-- event mapping, alert defaults, aggregation (29 tests)
+│   ├── calendar.test.ts   <-- iCal output, alerts, URL, persistence (26 tests)
+│   ├── events.test.ts     <-- event mapping, alert defaults, aggregation (31 tests)
 │   ├── aggregation.test.ts <-- task completion aggregation flow (9 tests)
 │   ├── feed-manager.test.ts <-- multi-feed routing (11 tests)
 │   ├── local-push.test.ts <-- local push, AppleScript gen, caching (25 tests)

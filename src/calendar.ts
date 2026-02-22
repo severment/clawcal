@@ -164,6 +164,9 @@ export class CalendarManager {
       lines.push(`URL:${event.url}`);
     }
 
+    // Source ID for debugging — visible in raw .ics even if calendar apps ignore it
+    lines.push(`X-CLAWCAL-SOURCE-ID:${event.uid}`);
+
     if (event.alerts && event.alerts.length > 0) {
       for (const alert of event.alerts) {
         lines.push('BEGIN:VALARM');

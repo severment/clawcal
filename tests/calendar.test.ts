@@ -178,6 +178,17 @@ describe('CalendarManager', () => {
     expect(content).toContain('X-OPENCLAW-PROJECT:utmgate');
   });
 
+  it('includes X-CLAWCAL-SOURCE-ID for debugging', () => {
+    calendar.addEvent({
+      uid: 'test-source-id',
+      title: 'Debug Test',
+      start: new Date('2025-02-25T09:00:00Z'),
+    });
+
+    const content = readFileSync(TEST_FILE, 'utf-8');
+    expect(content).toContain('X-CLAWCAL-SOURCE-ID:test-source-id');
+  });
+
   it('handles recurring events with RRULE', () => {
     calendar.addEvent({
       uid: 'test-recurring',

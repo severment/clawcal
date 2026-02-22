@@ -177,6 +177,29 @@ describe('buildDailyTaskAggregate', () => {
     expect(event.description).toBe('- Fix login bug\n- Update docs');
   });
 
+  it('truncates description at 25 tasks with "+N more"', () => {
+    const date = new Date('2025-02-25T15:00:00Z');
+    const tasks = Array.from({ length: 30 }, (_, i) => ({ summary: `Task ${i + 1}` }));
+    const event = buildDailyTaskAggregate('dev-agent', date, tasks);
+
+    const lines = event.description!.split('\n');
+    expect(lines).toHaveLength(26); // 25 shown + 1 "+N more"
+    expect(lines[0]).toBe('- Task 1');
+    expect(lines[24]).toBe('- Task 25');
+    expect(lines[25]).toBe('+ 5 more');
+    expect(event.title).toBe('Shipped 30 tasks -- dev-agent');
+  });
+
+  it('does not truncate at exactly 25 tasks', () => {
+    const date = new Date('2025-02-25T15:00:00Z');
+    const tasks = Array.from({ length: 25 }, (_, i) => ({ summary: `Task ${i + 1}` }));
+    const event = buildDailyTaskAggregate('dev-agent', date, tasks);
+
+    const lines = event.description!.split('\n');
+    expect(lines).toHaveLength(25);
+    expect(lines[24]).toBe('- Task 25');
+  });
+
   it('sets all-day, completed status, and agent', () => {
     const date = new Date('2025-02-25T15:00:00Z');
     const event = buildDailyTaskAggregate('dev-agent', date, [
