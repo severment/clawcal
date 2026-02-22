@@ -27,7 +27,9 @@ npm install clawcal
 {
   plugins: {
     entries: {
-      clawcal: { enabled: true }
+      clawcal: {
+        enabled: true
+      }
     }
   }
 }
@@ -100,9 +102,11 @@ Configure which feeds to generate:
     entries: {
       clawcal: {
         enabled: true,
-        feeds: {
-          combined: true,   // all-agents.ics
-          per_agent: true   // one .ics per agent
+        config: {
+          feeds: {
+            combined: true,   // all-agents.ics
+            per_agent: true   // one .ics per agent
+          }
         }
       }
     }
@@ -171,9 +175,12 @@ This happens automatically on macOS alongside the ICS feeds. On Linux the local 
   plugins: {
     entries: {
       clawcal: {
-        localPush: {
-          enabled: true,          // default, no-ops on non-macOS
-          calendarSource: "iCloud" // which macOS Calendar account to target
+        enabled: true,
+        config: {
+          localPush: {
+            enabled: true,          // default, no-ops on non-macOS
+            calendarSource: "iCloud" // which macOS Calendar account to target
+          }
         }
       }
     }
@@ -201,12 +208,15 @@ Override defaults per event type:
   plugins: {
     entries: {
       clawcal: {
-        defaults: {
-          alerts: {
-            scheduled_posts: [15],        // 15 min before
-            launch_sequences: [15, 60],   // 15 min and 1 hour before
-            analytics_checkins: [0],      // at event time
-            task_completions: []          // no alert
+        enabled: true,
+        config: {
+          defaults: {
+            alerts: {
+              scheduled_posts: [15],        // 15 min before
+              launch_sequences: [15, 60],   // 15 min and 1 hour before
+              analytics_checkins: [0],      // at event time
+              task_completions: []          // no alert
+            }
           }
         }
       }
@@ -231,7 +241,6 @@ curl -u ":$(openclaw config get gateway.auth.token)" http://localhost:18789/claw
 
 | Key | Type | Default | Purpose |
 |---|---|---|---|
-| `enabled` | boolean | `true` | Enable/disable the plugin |
 | `feeds.combined` | boolean | `true` | Generate combined all-agents feed |
 | `feeds.per_agent` | boolean | `true` | Generate per-agent feeds |
 | `localPush.enabled` | boolean | `true` | Push events to local Apple Calendar (macOS only) |

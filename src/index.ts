@@ -26,6 +26,7 @@ interface PluginApi {
       };
     };
   };
+  pluginConfig?: Partial<CalendarConfig>;
   registerHttpRoute(params: { path: string; handler: (req: IncomingMessage, res: ServerResponse) => void }): void;
   registerHttpHandler(handler: (req: IncomingMessage, res: ServerResponse) => boolean | Promise<boolean>): void;
   registerTool(tool: any): void;
@@ -34,7 +35,6 @@ interface PluginApi {
 }
 
 const DEFAULT_CONFIG: CalendarConfig = {
-  enabled: true,
   file: '~/.openclaw/clawcal/agent-calendar.ics',
   file_directory: '~/.openclaw/clawcal/',
   feeds: {
@@ -76,16 +76,13 @@ const DEFAULT_CONFIG: CalendarConfig = {
 /**
  * Plugin entry point. Called by OpenClaw when the extension loads.
  */
-export function register(api: PluginApi, userConfig?: Partial<CalendarConfig>): FeedManager {
+export function register(api: PluginApi): FeedManager {
+  const userConfig = api.pluginConfig as Partial<CalendarConfig> | undefined;
   const config: CalendarConfig = userConfig ? mergeConfig(DEFAULT_CONFIG, userConfig) : DEFAULT_CONFIG;
   const directory = api.resolvePath(config.file_directory);
 
   const localPush = new LocalCalendarPush(config.localPush);
   const feeds = new FeedManager(directory, config.feeds, localPush);
-
-  if (!config.enabled) {
-    return feeds;
-  }
 
   const authConfig = api.config.gateway?.auth;
 

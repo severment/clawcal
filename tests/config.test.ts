@@ -3,7 +3,6 @@ import { deepMerge, mergeConfig } from '../src/config';
 import { CalendarConfig } from '../src/types';
 
 const DEFAULT_CONFIG: CalendarConfig = {
-  enabled: true,
   file: '~/.openclaw/clawcal/agent-calendar.ics',
   file_directory: '~/.openclaw/clawcal/',
   feeds: {
@@ -48,8 +47,8 @@ describe('deepMerge', () => {
   });
 
   it('overrides a top-level primitive', () => {
-    const result = mergeConfig(DEFAULT_CONFIG, { enabled: false });
-    expect(result.enabled).toBe(false);
+    const result = mergeConfig(DEFAULT_CONFIG, { file: '/tmp/test.ics' });
+    expect(result.file).toBe('/tmp/test.ics');
     expect(result.feeds).toEqual(DEFAULT_CONFIG.feeds);
     expect(result.defaults).toEqual(DEFAULT_CONFIG.defaults);
   });
@@ -90,13 +89,13 @@ describe('deepMerge', () => {
   });
 
   it('ignores undefined values', () => {
-    const result = mergeConfig(DEFAULT_CONFIG, { enabled: undefined } as any);
-    expect(result.enabled).toBe(true);
+    const result = mergeConfig(DEFAULT_CONFIG, { file: undefined } as any);
+    expect(result.file).toBe(DEFAULT_CONFIG.file);
   });
 
   it('does not mutate the base config', () => {
     const baseCopy = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-    mergeConfig(DEFAULT_CONFIG, { enabled: false });
+    mergeConfig(DEFAULT_CONFIG, { file: '/tmp/test.ics' });
     expect(DEFAULT_CONFIG).toEqual(baseCopy);
   });
 });

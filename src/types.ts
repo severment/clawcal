@@ -33,7 +33,6 @@ export interface LocalPushConfig {
 }
 
 export interface CalendarConfig {
-  enabled: boolean;
   file: string;             // legacy single-file path (used when feeds not configured)
   file_directory: string;   // directory for multi-feed output
   feeds: FeedsConfig;

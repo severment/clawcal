@@ -4,8 +4,72 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-      "enabled": {
-        "type": "boolean"
+      "file": {
+        "type": "string"
+      },
+      "file_directory": {
+        "type": "string"
+      },
+      "feeds": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "combined": { "type": "boolean" },
+          "per_agent": { "type": "boolean" }
+        }
+      },
+      "localPush": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "calendarSource": { "type": "string" }
+        }
+      },
+      "events": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scheduled_posts": { "type": "boolean" },
+          "launch_sequences": { "type": "boolean" },
+          "task_completions": { "type": "boolean" },
+          "analytics_checkins": { "type": "boolean" },
+          "cron_automations": { "type": "boolean" },
+          "content_drafts": { "type": "boolean" },
+          "reminders": { "type": "boolean" }
+        }
+      },
+      "defaults": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "analytics_checkin_offsets": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "event_duration_minutes": { "type": "number" },
+          "alerts": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "scheduled_posts": { "type": "array", "items": { "type": "number" } },
+              "launch_sequences": { "type": "array", "items": { "type": "number" } },
+              "analytics_checkins": { "type": "array", "items": { "type": "number" } },
+              "cron_automations": { "type": "array", "items": { "type": "number" } },
+              "content_drafts": { "type": "array", "items": { "type": "number" } },
+              "reminders": { "type": "array", "items": { "type": "number" } },
+              "task_completions": { "type": "array", "items": { "type": "number" } }
+            }
+          }
+        }
+      },
+      "cleanup": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "max_past_events": { "type": "number" },
+          "retention_days": { "type": "number" }
+        }
       }
     }
   }
