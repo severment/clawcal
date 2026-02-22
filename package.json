@@ -1,6 +1,6 @@
 {
   "name": "clawcal",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "iCal feed for OpenClaw agent activity",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
