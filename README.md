@@ -337,13 +337,13 @@ clawcal/
 │   ├── local-push.ts      <-- macOS Apple Calendar push via osascript
 │   └── types.ts           <-- type definitions
 ├── tests/
-│   ├── calendar.test.ts   <-- iCal output, alerts, URL, persistence (26 tests)
+│   ├── calendar.test.ts   <-- iCal output, alerts, URL, sanitization (38 tests)
 │   ├── events.test.ts     <-- event mapping, alert defaults, aggregation (31 tests)
 │   ├── aggregation.test.ts <-- task completion aggregation flow (9 tests)
 │   ├── feed-manager.test.ts <-- multi-feed routing (11 tests)
-│   ├── local-push.test.ts <-- local push, AppleScript gen, caching (25 tests)
+│   ├── local-push.test.ts <-- local push, AppleScript gen, caching (26 tests)
 │   ├── config.test.ts     <-- deep merge config (8 tests)
-│   └── auth.test.ts       <-- token, password, proxy auth (16 tests)
+│   └── auth.test.ts       <-- token, password, proxy auth, fail-closed (18 tests)
 ├── README.md
 ├── CONTRIBUTING.md
 └── LICENSE
