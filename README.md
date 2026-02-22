@@ -1,7 +1,5 @@
 # ClawCal — your agent's activity, in your calendar
 
-![ClawCal — Apple Calendar showing agent events with native alerts](assets/hero.png)
-
 <!-- badges -->
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-plugin-FF6B00.svg)](#)
