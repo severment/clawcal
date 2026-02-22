@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, unlinkSync, readFileSync } from 'fs';
-import { CalendarManager, formatICSDate, formatICSDateOnly, escapeICS, unescapeICS, foldLine, parseICSDate } from '../src/calendar';
+import { CalendarManager, formatICSDate, formatICSDateOnly, escapeICS, unescapeICS, foldLine, parseICSDate, stripControl, sanitizeContent } from '../src/calendar';
 
 const TEST_FILE = '/tmp/clawcal-test.ics';
 
@@ -353,5 +353,108 @@ describe('iCal formatting utilities', () => {
     for (let i = 1; i < lines.length; i++) {
       expect(lines[i][0]).toBe(' ');
     }
+  });
+});
+
+describe('input sanitization', () => {
+  describe('stripControl', () => {
+    it('strips all control characters', () => {
+      expect(stripControl('hello\x00world')).toBe('helloworld');
+      expect(stripControl('tab\there')).toBe('tabhere');
+      expect(stripControl('new\nline')).toBe('newline');
+      expect(stripControl('carriage\rreturn')).toBe('carriagereturn');
+    });
+
+    it('strips Unicode line separators', () => {
+      expect(stripControl('before\u2028after')).toBe('beforeafter');
+      expect(stripControl('before\u2029after')).toBe('beforeafter');
+    });
+
+    it('trims whitespace', () => {
+      expect(stripControl('  padded  ')).toBe('padded');
+    });
+
+    it('leaves normal text untouched', () => {
+      expect(stripControl('Hello, World!')).toBe('Hello, World!');
+    });
+  });
+
+  describe('sanitizeContent', () => {
+    it('preserves newlines', () => {
+      expect(sanitizeContent('line1\nline2\nline3')).toBe('line1\nline2\nline3');
+    });
+
+    it('strips other control characters', () => {
+      expect(sanitizeContent('hello\x00world')).toBe('helloworld');
+      expect(sanitizeContent('tab\there')).toBe('tabhere');
+    });
+
+    it('normalizes Unicode line separators to newlines', () => {
+      expect(sanitizeContent('before\u2028after')).toBe('before\nafter');
+      expect(sanitizeContent('before\u2029after')).toBe('before\nafter');
+    });
+
+    it('trims whitespace', () => {
+      expect(sanitizeContent('  padded  ')).toBe('padded');
+    });
+  });
+
+  describe('CalendarManager sanitizes on addEvent', () => {
+    let calendar: CalendarManager;
+    const file = '/tmp/clawcal-sanitize-test.ics';
+
+    beforeEach(() => {
+      if (existsSync(file)) unlinkSync(file);
+      calendar = new CalendarManager(file, 'Test');
+    });
+
+    afterEach(() => {
+      if (existsSync(file)) unlinkSync(file);
+    });
+
+    it('strips control chars from title', () => {
+      calendar.addEvent({
+        uid: 'san-1',
+        title: 'Evil\x00Title\nHere',
+        start: new Date('2025-02-25T09:00:00Z'),
+      });
+
+      expect(calendar.getEvent('san-1')?.title).toBe('EvilTitleHere');
+    });
+
+    it('preserves newlines in description but strips other control chars', () => {
+      calendar.addEvent({
+        uid: 'san-2',
+        title: 'Test',
+        description: 'Line 1\nLine 2\x00Hidden',
+        start: new Date('2025-02-25T09:00:00Z'),
+      });
+
+      expect(calendar.getEvent('san-2')?.description).toBe('Line 1\nLine 2Hidden');
+    });
+
+    it('sanitizes agent and project fields', () => {
+      calendar.addEvent({
+        uid: 'san-3',
+        title: 'Test',
+        agent: 'agent\ninjected',
+        project: 'project\ttabs',
+        start: new Date('2025-02-25T09:00:00Z'),
+      });
+
+      expect(calendar.getEvent('san-3')?.agent).toBe('agentinjected');
+      expect(calendar.getEvent('san-3')?.project).toBe('projecttabs');
+    });
+
+    it('sanitizes fields on updateEvent too', () => {
+      calendar.addEvent({
+        uid: 'san-4',
+        title: 'Original',
+        start: new Date('2025-02-25T09:00:00Z'),
+      });
+
+      calendar.updateEvent('san-4', { title: 'Updated\x00Title' });
+      expect(calendar.getEvent('san-4')?.title).toBe('UpdatedTitle');
+    });
   });
 });

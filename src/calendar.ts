@@ -19,7 +19,7 @@ export class CalendarManager {
   }
 
   addEvent(event: CalendarEvent): void {
-    this.events.set(event.uid, event);
+    this.events.set(event.uid, sanitizeEvent(event));
     this.write();
   }
 
@@ -27,11 +27,11 @@ export class CalendarManager {
     const existing = this.events.get(uid);
     if (!existing) return;
 
-    this.events.set(uid, {
+    this.events.set(uid, sanitizeEvent({
       ...existing,
       ...updates,
       sequence: (existing.sequence || 0) + 1,
-    });
+    }));
     this.write();
   }
 
@@ -319,6 +319,44 @@ export class CalendarManager {
       }
     }
   }
+}
+
+// --- Input sanitization ---
+
+/**
+ * Strip control characters from a structural field (title, agent, category, etc.).
+ * No control chars at all — these influence parsers, scripts, routing, and file naming.
+ */
+export function stripControl(value: string): string {
+  return value.replace(/[\x00-\x1f\x7f\u2028\u2029]/g, '').trim();
+}
+
+/**
+ * Sanitize a content field (description). Preserves newlines since they're
+ * semantically meaningful (bullet lists, structured context). Normalizes
+ * Unicode line separators (U+2028, U+2029) to \n.
+ */
+export function sanitizeContent(value: string): string {
+  return value
+    .replace(/[\u2028\u2029]/g, '\n')
+    .replace(/[\x00-\x09\x0b\x0c\x0e-\x1f\x7f]/g, '')
+    .trim();
+}
+
+/**
+ * Sanitize all string fields of a CalendarEvent at the model boundary.
+ * Structural fields get strict stripping; descriptions preserve newlines.
+ */
+function sanitizeEvent(event: CalendarEvent): CalendarEvent {
+  return {
+    ...event,
+    title: stripControl(event.title),
+    description: event.description ? sanitizeContent(event.description) : undefined,
+    agent: event.agent ? stripControl(event.agent) : undefined,
+    project: event.project ? stripControl(event.project) : undefined,
+    category: event.category ? stripControl(event.category) : undefined,
+    url: event.url ? stripControl(event.url) : undefined,
+  };
 }
 
 // --- iCal formatting utilities ---
