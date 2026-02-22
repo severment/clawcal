@@ -172,4 +172,20 @@ describe('checkAuth', () => {
       },
     })).toBe(true);
   });
+
+  // --- Fail-closed on unknown mode ---
+
+  it('rejects requests with unknown auth mode (fail-closed)', () => {
+    const req = mockReq();
+    const res = mockRes();
+    expect(checkAuth(req, res, { mode: 'oauth' as any })).toBe(false);
+    expect(res._status).toBe(500);
+  });
+
+  it('rejects requests with typo in auth mode', () => {
+    const req = mockReq({ authorization: 'Bearer secret123' });
+    const res = mockRes();
+    expect(checkAuth(req, res, { mode: 'Token' as any, token: 'secret123' })).toBe(false);
+    expect(res._status).toBe(500);
+  });
 });

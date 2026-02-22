@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { timingSafeEqual } from 'crypto';
 import { FeedManager } from './feed-manager.js';
 import { LocalCalendarPush } from './local-push.js';
 import { registerListeners } from './listener.js';
@@ -228,13 +229,13 @@ export function checkAuth(
     const authHeader = req.headers.authorization || '';
 
     if (authHeader.startsWith('Bearer ')) {
-      if (authHeader.slice(7).trim() === token) return true;
+      if (safeEqual(authHeader.slice(7).trim(), token)) return true;
     }
 
     if (authHeader.startsWith('Basic ')) {
       const decoded = Buffer.from(authHeader.slice(6), 'base64').toString();
       const password = decoded.split(':').slice(1).join(':');
-      if (password === token) return true;
+      if (safeEqual(password, token)) return true;
     }
 
     res.statusCode = 401;
@@ -252,7 +253,7 @@ export function checkAuth(
     if (authHeader.startsWith('Basic ')) {
       const decoded = Buffer.from(authHeader.slice(6), 'base64').toString();
       const reqPassword = decoded.split(':').slice(1).join(':');
-      if (reqPassword === password) return true;
+      if (safeEqual(reqPassword, password)) return true;
     }
 
     res.statusCode = 401;
@@ -296,7 +297,17 @@ export function checkAuth(
     return true;
   }
 
-  return true;
+  // Unknown auth mode — fail closed rather than silently granting access
+  res.statusCode = 500;
+  res.end('Server misconfiguration');
+  return false;
+}
+
+function safeEqual(a: string, b: string): boolean {
+  const bufA = new Uint8Array(Buffer.from(a));
+  const bufB = new Uint8Array(Buffer.from(b));
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
 }
 
 function serveICS(res: ServerResponse, ics: string, filename: string): void {
