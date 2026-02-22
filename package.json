@@ -17,8 +17,7 @@
     "prepublishOnly": "npm run build && npm test"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "keywords": [
     "openclaw",
