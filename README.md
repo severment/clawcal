@@ -3,6 +3,7 @@
 ![ClawCal hero — Apple Calendar showing agent events](https://cdn.jsdelivr.net/npm/clawcal@latest/assets/hero.jpg)
 
 <!-- badges -->
+[![npm version](https://img.shields.io/npm/v/clawcal.svg)](https://www.npmjs.com/package/clawcal)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-plugin-FF6B00.svg)](#)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#)
