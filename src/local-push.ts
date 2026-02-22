@@ -12,13 +12,11 @@ const OSASCRIPT_TIMEOUT = 10_000;
  */
 export class LocalCalendarPush {
   private enabled: boolean;
-  private calendarSource: string;
   private isDarwin: boolean;
-  private knownCalendars: Set<string> = new Set();
+  private queue: Promise<void> = Promise.resolve();
 
   constructor(config: LocalPushConfig) {
     this.enabled = config.enabled;
-    this.calendarSource = config.calendarSource;
     this.isDarwin = process.platform === 'darwin';
   }
 
@@ -27,11 +25,10 @@ export class LocalCalendarPush {
     if (event.rrule) return; // RRULE format differs in AppleScript
 
     const calName = calendarName(event.agent);
-    const source = this.calendarSource;
-    const script = [
-      ...this.ensureCalendarScript(calName),
-      ...createEventScript(calName, source, event),
-    ].join('\n');
+    const script = buildScript([
+      ...ensureCalendarLines(calName),
+      ...createEventLines(calName, event),
+    ]);
 
     this.run(script);
   }
@@ -42,12 +39,11 @@ export class LocalCalendarPush {
 
     // AppleScript can't modify events — delete + recreate
     const calName = calendarName(event.agent);
-    const source = this.calendarSource;
-    const script = [
-      ...this.ensureCalendarScript(calName),
-      ...deleteEventScript(calName, source, event.title),
-      ...createEventScript(calName, source, event),
-    ].join('\n');
+    const script = buildScript([
+      ...ensureCalendarLines(calName),
+      ...deleteEventLines(calName, event.title),
+      ...createEventLines(calName, event),
+    ]);
 
     this.run(script);
   }
@@ -56,8 +52,7 @@ export class LocalCalendarPush {
     if (!this.shouldRun()) return;
 
     const calName = calendarName(agent);
-    const source = this.calendarSource;
-    const script = deleteEventScript(calName, source, title).join('\n');
+    const script = buildScript(deleteEventLines(calName, title));
 
     this.run(script);
   }
@@ -66,28 +61,15 @@ export class LocalCalendarPush {
     return this.enabled && this.isDarwin;
   }
 
-  private ensureCalendarScript(calName: string): string[] {
-    if (this.knownCalendars.has(calName)) return [];
-
-    this.knownCalendars.add(calName);
-
-    const src = esc(this.calendarSource);
-    return [
-      'tell application "Calendar"',
-      `  set targetSource to first source whose name is ${src}`,
-      `  if not (exists calendar ${esc(calName)} of targetSource) then`,
-      `    make new calendar at targetSource with properties {name:${esc(calName)}}`,
-      '  end if',
-      'end tell',
-    ];
-  }
-
   private run(script: string): void {
-    execFile('osascript', ['-e', script], { timeout: OSASCRIPT_TIMEOUT }, (err) => {
-      if (err) {
-        console.warn(`[clawcal] local-push osascript failed: ${err.message}`);
-      }
-    });
+    this.queue = this.queue.then(() => new Promise<void>((resolve) => {
+      execFile('osascript', ['-e', script], { timeout: OSASCRIPT_TIMEOUT }, (err) => {
+        if (err) {
+          console.warn(`[clawcal] local-push osascript failed: ${err.message}`);
+        }
+        resolve();
+      });
+    }));
   }
 }
 
@@ -107,10 +89,31 @@ function esc(value: string): string {
   return `"${escaped}"`;
 }
 
-function createEventScript(calName: string, source: string, event: CalendarEvent): string[] {
-  const lines: string[] = [
+/**
+ * Wrap inner lines in a single `tell application "Calendar"` block.
+ * Keeps calendar creation + event ops atomic within one osascript call,
+ * preventing race conditions when multiple pushes fire concurrently.
+ */
+function buildScript(innerLines: string[]): string {
+  return [
     'tell application "Calendar"',
-    `  tell calendar ${esc(calName)} of source ${esc(source)}`,
+    ...innerLines,
+    'end tell',
+  ].join('\n');
+}
+
+function ensureCalendarLines(calName: string): string[] {
+  return [
+    `  set calNames to name of every calendar`,
+    `  if calNames does not contain ${esc(calName)} then`,
+    `    make new calendar with properties {name:${esc(calName)}}`,
+    '  end if',
+  ];
+}
+
+function createEventLines(calName: string, event: CalendarEvent): string[] {
+  const lines: string[] = [
+    `  tell calendar ${esc(calName)}`,
     '    set startDate to current date',
     ...setDateComponents('startDate', event.start),
   ];
@@ -135,7 +138,6 @@ function createEventScript(calName: string, source: string, event: CalendarEvent
     lines.push(`    set description of newEvent to ${esc(event.description)}`);
   }
 
-  // Add display alarms
   if (event.alerts && event.alerts.length > 0) {
     for (const alert of event.alerts) {
       lines.push(
@@ -144,20 +146,18 @@ function createEventScript(calName: string, source: string, event: CalendarEvent
     }
   }
 
-  lines.push('  end tell', 'end tell');
+  lines.push('  end tell');
   return lines;
 }
 
-function deleteEventScript(calName: string, source: string, title: string): string[] {
+function deleteEventLines(calName: string, title: string): string[] {
   return [
-    'tell application "Calendar"',
-    `  tell calendar ${esc(calName)} of source ${esc(source)}`,
+    `  tell calendar ${esc(calName)}`,
     `    set matchingEvents to (every event whose summary is ${esc(title)})`,
     '    repeat with evt in matchingEvents',
     '      delete evt',
     '    end repeat',
     '  end tell',
-    'end tell',
   ];
 }
 

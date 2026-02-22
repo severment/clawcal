@@ -9,6 +9,9 @@ vi.mock('child_process', () => ({
 
 const mockedExecFile = vi.mocked(execFile);
 
+/** Flush the internal promise queue so execFile mock is called. */
+const flush = () => new Promise(r => setTimeout(r, 0));
+
 function makeConfig(overrides: Partial<LocalPushConfig> = {}): LocalPushConfig {
   return {
     enabled: true,
@@ -64,9 +67,10 @@ describe('LocalCalendarPush', () => {
   });
 
   describe('pushEvent', () => {
-    it('generates calendar creation + event creation AppleScript', () => {
+    it('generates calendar creation + event creation AppleScript', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent());
+      await flush();
 
       expect(mockedExecFile).toHaveBeenCalledOnce();
       expect(mockedExecFile.mock.calls[0][0]).toBe('osascript');
@@ -91,11 +95,12 @@ describe('LocalCalendarPush', () => {
       expect(mockedExecFile).not.toHaveBeenCalled();
     });
 
-    it('includes display alarms for alerts', () => {
+    it('includes display alarms for alerts', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent({
         alerts: [{ minutes: 15 }, { minutes: 60 }],
       }));
+      await flush();
 
       const script = lastScript();
       expect(script).toContain('trigger interval:-15');
@@ -103,36 +108,40 @@ describe('LocalCalendarPush', () => {
       expect(script).toContain('display alarm');
     });
 
-    it('sets allday event property when allDay is true', () => {
+    it('sets allday event property when allDay is true', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent({ allDay: true }));
+      await flush();
 
       const script = lastScript();
       expect(script).toContain('allday event:true');
     });
 
-    it('sets description when present', () => {
+    it('sets description when present', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent({ description: 'Launch the v2 campaign' }));
+      await flush();
 
       const script = lastScript();
       expect(script).toContain('set description of newEvent to "Launch the v2 campaign"');
     });
 
-    it('uses duration to compute end date', () => {
+    it('uses duration to compute end date', async () => {
       const push = new LocalCalendarPush(makeConfig());
       const start = new Date(2025, 2, 15, 14, 0, 0);
       push.pushEvent(makeEvent({ start, duration: 30 }));
+      await flush();
 
       const script = lastScript();
       // End date should be 14:30
       expect(script).toContain('set minutes of endDate to 30');
     });
 
-    it('defaults to 15 minutes duration when no end or duration', () => {
+    it('defaults to 15 minutes duration when no end or duration', async () => {
       const push = new LocalCalendarPush(makeConfig());
       const start = new Date(2025, 2, 15, 14, 0, 0);
       push.pushEvent(makeEvent({ start, end: undefined, duration: undefined }));
+      await flush();
 
       const script = lastScript();
       // End date should be 14:15
@@ -141,10 +150,11 @@ describe('LocalCalendarPush', () => {
   });
 
   describe('date formatting', () => {
-    it('uses component assignment for locale-safe dates', () => {
+    it('uses component assignment for locale-safe dates', async () => {
       const push = new LocalCalendarPush(makeConfig());
       const date = new Date(2025, 11, 25, 9, 5, 30); // Dec 25 2025, 9:05:30 AM
       push.pushEvent(makeEvent({ start: date }));
+      await flush();
 
       const script = lastScript();
       expect(script).toContain('set year of startDate to 2025');
@@ -157,33 +167,37 @@ describe('LocalCalendarPush', () => {
   });
 
   describe('escaping', () => {
-    it('escapes double quotes in event titles', () => {
+    it('escapes double quotes in event titles', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent({ title: 'Launch "Beta" v2' }));
+      await flush();
 
       const script = lastScript();
       expect(script).toContain('summary:"Launch \\"Beta\\" v2"');
     });
 
-    it('escapes backslashes in event titles', () => {
+    it('escapes backslashes in event titles', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent({ title: 'Path C:\\Users' }));
+      await flush();
 
       const script = lastScript();
       expect(script).toContain('summary:"Path C:\\\\Users"');
     });
 
-    it('escapes quotes in calendar names', () => {
+    it('escapes quotes in calendar names', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent({ agent: 'agent "special"' }));
+      await flush();
 
       const script = lastScript();
       expect(script).toContain('"OpenClaw - agent \\"special\\""');
     });
 
-    it('strips control characters to prevent AppleScript injection', () => {
+    it('strips control characters to prevent AppleScript injection', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent({ title: 'Evil\ndo shell script "rm -rf /"\n--' }));
+      await flush();
 
       const script = lastScript();
       // Newlines stripped — the injected command is collapsed into the quoted string, not on its own line
@@ -195,40 +209,43 @@ describe('LocalCalendarPush', () => {
     });
   });
 
-  describe('calendar caching', () => {
-    it('creates calendar only on first push for an agent', () => {
+  describe('serialized queue', () => {
+    it('processes events sequentially to prevent duplicate calendars', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent());
       push.pushEvent(makeEvent({ uid: 'test-uid-2', title: 'Second Event' }));
+      await flush();
 
+      // Both should have been called (sequentially, not concurrently)
       expect(mockedExecFile).toHaveBeenCalledTimes(2);
 
       const firstScript = (mockedExecFile.mock.calls[0][1] as string[])[1];
       const secondScript = (mockedExecFile.mock.calls[1][1] as string[])[1];
 
-      expect(firstScript).toContain('make new calendar');
-      expect(secondScript).not.toContain('make new calendar');
+      // Both include the calendar existence check (no caching)
+      expect(firstScript).toContain('does not contain');
+      expect(secondScript).toContain('does not contain');
     });
 
-    it('creates separate calendars for different agents', () => {
+    it('creates separate calendars for different agents', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent({ agent: 'agent-a' }));
       push.pushEvent(makeEvent({ uid: 'test-uid-2', agent: 'agent-b' }));
+      await flush();
 
       const scriptA = (mockedExecFile.mock.calls[0][1] as string[])[1];
       const scriptB = (mockedExecFile.mock.calls[1][1] as string[])[1];
 
       expect(scriptA).toContain('"OpenClaw - agent-a"');
       expect(scriptB).toContain('"OpenClaw - agent-b"');
-      expect(scriptA).toContain('make new calendar');
-      expect(scriptB).toContain('make new calendar');
     });
   });
 
   describe('updateEvent', () => {
-    it('deletes then recreates the event', () => {
+    it('deletes then recreates the event', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.updateEvent(makeEvent());
+      await flush();
 
       const script = lastScript();
       // Should contain delete (matching by summary) and create
@@ -239,19 +256,20 @@ describe('LocalCalendarPush', () => {
   });
 
   describe('removeEvent', () => {
-    it('deletes events by summary match', () => {
+    it('deletes events by summary match', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.removeEvent('marketing-agent', 'Test Event');
+      await flush();
 
       const script = lastScript();
-      expect(script).toContain('tell calendar "OpenClaw - marketing-agent" of source "iCloud"');
+      expect(script).toContain('tell calendar "OpenClaw - marketing-agent"');
       expect(script).toContain('every event whose summary is "Test Event"');
       expect(script).toContain('delete evt');
     });
   });
 
   describe('error handling', () => {
-    it('warns but does not throw on osascript failure', () => {
+    it('warns but does not throw on osascript failure', async () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       mockedExecFile.mockImplementation((_cmd, _args, _opts, cb: any) => {
         cb(new Error('osascript crashed'));
@@ -260,6 +278,8 @@ describe('LocalCalendarPush', () => {
       const push = new LocalCalendarPush(makeConfig());
       // Should not throw
       expect(() => push.pushEvent(makeEvent())).not.toThrow();
+      await flush();
+
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining('osascript crashed'),
       );
@@ -267,58 +287,64 @@ describe('LocalCalendarPush', () => {
       mockedExecFile.mockImplementation((_cmd: any, _args: any, _opts: any, cb: any) => cb?.(null));
     });
 
-    it('passes 10s timeout to execFile', () => {
+    it('passes 10s timeout to execFile', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent());
+      await flush();
 
       const opts = mockedExecFile.mock.calls[0][2] as { timeout: number };
       expect(opts.timeout).toBe(10_000);
     });
   });
 
-  describe('calendarSource', () => {
-    it('default iCloud source targets iCloud in AppleScript', () => {
+  describe('calendar references', () => {
+    it('does not use source keyword (removed in modern macOS)', async () => {
       const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent());
+      await flush();
 
       const script = lastScript();
-      expect(script).toContain('first source whose name is "iCloud"');
-      expect(script).toContain('make new calendar at targetSource');
-      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "iCloud"');
+      expect(script).not.toContain('of source');
+      expect(script).not.toContain('targetSource');
     });
 
-    it('custom calendarSource targets that account', () => {
-      const push = new LocalCalendarPush(makeConfig({ calendarSource: 'Gmail' }));
+    it('uses name list check for calendar existence', async () => {
+      const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent());
+      await flush();
 
       const script = lastScript();
-      expect(script).toContain('first source whose name is "Gmail"');
-      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "Gmail"');
+      expect(script).toContain('set calNames to name of every calendar');
+      expect(script).toContain('calNames does not contain "OpenClaw - marketing-agent"');
     });
 
-    it('Exchange source targets Exchange account', () => {
-      const push = new LocalCalendarPush(makeConfig({ calendarSource: 'Exchange' }));
+    it('references calendars directly by name', async () => {
+      const push = new LocalCalendarPush(makeConfig());
       push.pushEvent(makeEvent());
+      await flush();
 
       const script = lastScript();
-      expect(script).toContain('first source whose name is "Exchange"');
-      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "Exchange"');
+      expect(script).toContain('tell calendar "OpenClaw - marketing-agent"');
     });
 
-    it('delete script references the correct source', () => {
-      const push = new LocalCalendarPush(makeConfig({ calendarSource: 'Gmail' }));
+    it('delete script references calendar directly', async () => {
+      const push = new LocalCalendarPush(makeConfig());
       push.removeEvent('marketing-agent', 'Test Event');
+      await flush();
 
       const script = lastScript();
-      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "Gmail"');
+      expect(script).toContain('tell calendar "OpenClaw - marketing-agent"');
+      expect(script).not.toContain('of source');
     });
 
-    it('update script references the correct source', () => {
-      const push = new LocalCalendarPush(makeConfig({ calendarSource: 'Exchange' }));
+    it('update script references calendar directly', async () => {
+      const push = new LocalCalendarPush(makeConfig());
       push.updateEvent(makeEvent());
+      await flush();
 
       const script = lastScript();
-      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "Exchange"');
+      expect(script).toContain('tell calendar "OpenClaw - marketing-agent"');
+      expect(script).not.toContain('of source');
     });
   });
 });
