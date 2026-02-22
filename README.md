@@ -18,6 +18,12 @@ Not a dashboard. Not a web app. Your calendar — the one you already have open.
 ### 1. Install
 
 ```bash
+openclaw plugins install clawcal
+```
+
+Or via npm if you're developing or integrating directly:
+
+```bash
 npm install clawcal
 ```
 
