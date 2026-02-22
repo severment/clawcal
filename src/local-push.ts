@@ -92,7 +92,7 @@ export class LocalCalendarPush {
 }
 
 function calendarName(agentId: string): string {
-  return `OpenClaw — ${agentId}`;
+  return `OpenClaw - ${agentId}`;
 }
 
 /**

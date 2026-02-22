@@ -73,7 +73,7 @@ describe('LocalCalendarPush', () => {
 
       const script = lastScript();
       expect(script).toContain('tell application "Calendar"');
-      expect(script).toContain('"OpenClaw — marketing-agent"');
+      expect(script).toContain('"OpenClaw - marketing-agent"');
       expect(script).toContain('make new calendar');
       expect(script).toContain('make new event');
       expect(script).toContain('summary:"Test Event"');
@@ -178,7 +178,7 @@ describe('LocalCalendarPush', () => {
       push.pushEvent(makeEvent({ agent: 'agent "special"' }));
 
       const script = lastScript();
-      expect(script).toContain('"OpenClaw — agent \\"special\\""');
+      expect(script).toContain('"OpenClaw - agent \\"special\\""');
     });
 
     it('strips control characters to prevent AppleScript injection', () => {
@@ -218,8 +218,8 @@ describe('LocalCalendarPush', () => {
       const scriptA = (mockedExecFile.mock.calls[0][1] as string[])[1];
       const scriptB = (mockedExecFile.mock.calls[1][1] as string[])[1];
 
-      expect(scriptA).toContain('"OpenClaw — agent-a"');
-      expect(scriptB).toContain('"OpenClaw — agent-b"');
+      expect(scriptA).toContain('"OpenClaw - agent-a"');
+      expect(scriptB).toContain('"OpenClaw - agent-b"');
       expect(scriptA).toContain('make new calendar');
       expect(scriptB).toContain('make new calendar');
     });
@@ -244,7 +244,7 @@ describe('LocalCalendarPush', () => {
       push.removeEvent('marketing-agent', 'Test Event');
 
       const script = lastScript();
-      expect(script).toContain('tell calendar "OpenClaw — marketing-agent" of source "iCloud"');
+      expect(script).toContain('tell calendar "OpenClaw - marketing-agent" of source "iCloud"');
       expect(script).toContain('every event whose summary is "Test Event"');
       expect(script).toContain('delete evt');
     });
@@ -284,7 +284,7 @@ describe('LocalCalendarPush', () => {
       const script = lastScript();
       expect(script).toContain('first source whose name is "iCloud"');
       expect(script).toContain('make new calendar at targetSource');
-      expect(script).toContain('calendar "OpenClaw — marketing-agent" of source "iCloud"');
+      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "iCloud"');
     });
 
     it('custom calendarSource targets that account', () => {
@@ -293,7 +293,7 @@ describe('LocalCalendarPush', () => {
 
       const script = lastScript();
       expect(script).toContain('first source whose name is "Gmail"');
-      expect(script).toContain('calendar "OpenClaw — marketing-agent" of source "Gmail"');
+      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "Gmail"');
     });
 
     it('Exchange source targets Exchange account', () => {
@@ -302,7 +302,7 @@ describe('LocalCalendarPush', () => {
 
       const script = lastScript();
       expect(script).toContain('first source whose name is "Exchange"');
-      expect(script).toContain('calendar "OpenClaw — marketing-agent" of source "Exchange"');
+      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "Exchange"');
     });
 
     it('delete script references the correct source', () => {
@@ -310,7 +310,7 @@ describe('LocalCalendarPush', () => {
       push.removeEvent('marketing-agent', 'Test Event');
 
       const script = lastScript();
-      expect(script).toContain('calendar "OpenClaw — marketing-agent" of source "Gmail"');
+      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "Gmail"');
     });
 
     it('update script references the correct source', () => {
@@ -318,7 +318,7 @@ describe('LocalCalendarPush', () => {
       push.updateEvent(makeEvent());
 
       const script = lastScript();
-      expect(script).toContain('calendar "OpenClaw — marketing-agent" of source "Exchange"');
+      expect(script).toContain('calendar "OpenClaw - marketing-agent" of source "Exchange"');
     });
   });
 });
