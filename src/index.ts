@@ -155,6 +155,16 @@ export function register(api: PluginApi, userConfig?: Partial<CalendarConfig>): 
     });
   }
 
+  // Config inspection route
+  api.registerHttpRoute({
+    path: '/clawcal/config',
+    handler: (req, res) => {
+      if (!checkAuth(req, res, authConfig)) return;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(config, null, 2));
+    },
+  });
+
   // Register the clawcal_schedule tool for agents
   api.registerTool({
     name: 'clawcal_schedule',
