@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fromScheduleEvent, fromTaskCompleteEvent, fromCronEvent, fromToolCall, createCheckinEvents, cronToRRule, parseOffset } from '../src/events';
+import { fromScheduleEvent, fromTaskCompleteEvent, fromCronEvent, fromToolCall, createCheckinEvents, cronToRRule, parseOffset, buildDailyTaskAggregate } from '../src/events';
 
 const alertDefaults = {
   scheduled_posts: [15],
@@ -118,6 +118,75 @@ describe('fromToolCall', () => {
     });
 
     expect(event.duration).toBe(15);
+  });
+
+  it('passes through url to the calendar event', () => {
+    const event = fromToolCall({
+      title: 'Check PR',
+      date: '2025-02-25T09:00:00Z',
+      url: 'https://github.com/org/repo/pull/42',
+    });
+
+    expect(event.url).toBe('https://github.com/org/repo/pull/42');
+  });
+
+  it('omits url when not provided', () => {
+    const event = fromToolCall({
+      title: 'No URL',
+      date: '2025-02-25T09:00:00Z',
+    });
+
+    expect(event.url).toBeUndefined();
+  });
+});
+
+describe('buildDailyTaskAggregate', () => {
+  it('creates aggregate with deterministic UID', () => {
+    const date = new Date('2025-02-25T15:00:00Z');
+    const event = buildDailyTaskAggregate('dev-agent', date, [
+      { summary: 'Fix login bug' },
+      { summary: 'Update docs' },
+    ]);
+
+    expect(event.uid).toBe('daily-tasks-dev-agent-2025-02-25');
+  });
+
+  it('generates title with correct count', () => {
+    const date = new Date('2025-02-25T15:00:00Z');
+
+    const single = buildDailyTaskAggregate('dev-agent', date, [
+      { summary: 'Fix bug' },
+    ]);
+    expect(single.title).toBe('Shipped 1 task -- dev-agent');
+
+    const multi = buildDailyTaskAggregate('dev-agent', date, [
+      { summary: 'Fix bug' },
+      { summary: 'Update docs' },
+      { summary: 'Add tests' },
+    ]);
+    expect(multi.title).toBe('Shipped 3 tasks -- dev-agent');
+  });
+
+  it('formats description as bullet-point list', () => {
+    const date = new Date('2025-02-25T15:00:00Z');
+    const event = buildDailyTaskAggregate('dev-agent', date, [
+      { summary: 'Fix login bug' },
+      { summary: 'Update docs' },
+    ]);
+
+    expect(event.description).toBe('- Fix login bug\n- Update docs');
+  });
+
+  it('sets all-day, completed status, and agent', () => {
+    const date = new Date('2025-02-25T15:00:00Z');
+    const event = buildDailyTaskAggregate('dev-agent', date, [
+      { summary: 'Task' },
+    ]);
+
+    expect(event.allDay).toBe(true);
+    expect(event.status).toBe('COMPLETED');
+    expect(event.category).toBe('completed');
+    expect(event.agent).toBe('dev-agent');
   });
 });
 

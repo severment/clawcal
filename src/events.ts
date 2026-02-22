@@ -109,6 +109,7 @@ export function fromToolCall(params: {
   allDay?: boolean;
   agent?: string;
   project?: string;
+  url?: string;
   alertMinutes?: number;
 }, defaults?: DefaultsConfig): CalendarEvent {
   const emoji = params.category ? (EMOJI[params.category] || '') : '';
@@ -129,6 +130,7 @@ export function fromToolCall(params: {
     category: params.category,
     agent: params.agent,
     project: params.project,
+    url: params.url,
     status: 'PLANNED',
     alerts,
   };
@@ -157,6 +159,30 @@ function alertsForCategory(category: string, defaults: DefaultsConfig): EventAle
   if (!minutes || minutes.length === 0) return undefined;
 
   return minutes.map(m => ({ minutes: m }));
+}
+
+/**
+ * Build a single daily aggregate event rolling up task completions for one agent.
+ * Deterministic UID means same-day updates increment SEQUENCE via updateEvent().
+ */
+export function buildDailyTaskAggregate(
+  agentId: string,
+  date: Date,
+  tasks: Array<{ summary: string }>,
+): CalendarEvent {
+  const dateStr = date.toISOString().slice(0, 10);
+  const count = tasks.length;
+  const noun = count === 1 ? 'task' : 'tasks';
+  return {
+    uid: `daily-tasks-${agentId}-${dateStr}`,
+    title: `Shipped ${count} ${noun} -- ${agentId}`,
+    description: tasks.map(t => `- ${t.summary}`).join('\n'),
+    start: date,
+    allDay: true,
+    category: 'completed',
+    agent: agentId,
+    status: 'COMPLETED',
+  };
 }
 
 // --- Helpers ---

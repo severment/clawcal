@@ -56,6 +56,7 @@ clawcal/
 └── tests/
     ├── calendar.test.ts  ← iCal output correctness
     ├── events.test.ts    ← event mapping logic
+    ├── aggregation.test.ts ← task completion aggregation flow
     ├── feed-manager.test.ts ← multi-feed routing
     ├── local-push.test.ts   ← local push, AppleScript generation
     └── auth.test.ts         ← gateway auth integration
@@ -66,7 +67,7 @@ clawcal/
 | Gateway Event | Calendar Entry | Example |
 |---|---|---|
 | `agent:schedule` | Timed event | "🐦 Tweet: MyApp v2 launch" at Tue 12pm |
-| `agent:task:complete` | All-day event | "✅ Landing page shipped" |
+| `agent:task:complete` | All-day event (or timed/aggregated) | "✅ Landing page shipped" or "Shipped 3 tasks -- dev-agent" |
 | `cron:register` | Recurring event | "🔄 Weekly digest" every Monday 8am |
 | `agent:schedule:update` | Updated event (SEQUENCE incremented) | Time change on existing event |
 | `agent:schedule:cancel` | Cancelled event (STATUS:CANCELLED) | Cancelled post |

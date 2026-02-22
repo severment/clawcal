@@ -253,6 +253,43 @@ describe('CalendarManager', () => {
     expect(event?.alerts?.[1].minutes).toBe(60);
   });
 
+  it('includes URL property when url is set', () => {
+    calendar.addEvent({
+      uid: 'test-url',
+      title: 'Event With URL',
+      start: new Date('2025-02-25T09:00:00Z'),
+      url: 'https://github.com/org/repo/pull/42',
+    });
+
+    const content = readFileSync(TEST_FILE, 'utf-8');
+    expect(content).toContain('URL:https://github.com/org/repo/pull/42');
+  });
+
+  it('omits URL property when url is not set', () => {
+    calendar.addEvent({
+      uid: 'test-no-url',
+      title: 'Event Without URL',
+      start: new Date('2025-02-25T09:00:00Z'),
+    });
+
+    const content = readFileSync(TEST_FILE, 'utf-8');
+    expect(content).not.toContain('URL:');
+  });
+
+  it('persists and restores URL across instances', () => {
+    calendar.addEvent({
+      uid: 'test-url-persist',
+      title: 'URL Persistence',
+      start: new Date('2025-02-25T09:00:00Z'),
+      url: 'https://example.com/dashboard',
+    });
+
+    const restored = new CalendarManager(TEST_FILE);
+    const event = restored.getEvent('test-url-persist');
+
+    expect(event?.url).toBe('https://example.com/dashboard');
+  });
+
   it('omits VALARM when no alerts configured', () => {
     calendar.addEvent({
       uid: 'test-no-alarm',

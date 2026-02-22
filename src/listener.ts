@@ -1,4 +1,4 @@
-import { fromScheduleEvent, fromTaskCompleteEvent, fromCronEvent, createCheckinEvents } from './events.js';
+import { fromScheduleEvent, fromTaskCompleteEvent, fromCronEvent, createCheckinEvents, buildDailyTaskAggregate } from './events.js';
 import { CalendarConfig, CalendarEvent, GatewayScheduleEvent, GatewayTaskCompleteEvent, GatewayCronEvent, GatewayScheduleUpdateEvent, GatewayScheduleCancelEvent } from './types.js';
 
 /**
@@ -16,6 +16,7 @@ export interface EventSink {
   addEvent(event: CalendarEvent): void;
   updateEvent(uid: string, updates: Partial<CalendarEvent>): void;
   cancelEvent(uid: string): void;
+  getEvent(uid: string): CalendarEvent | undefined;
 }
 
 /**
@@ -49,9 +50,43 @@ export function registerListeners(api: HookSource, sink: EventSink, config: Cale
 
   // Agent completed a task
   if (config.events.task_completions) {
+    const tcConfig = config.taskCompletions;
+
     api.registerHook('agent:task:complete', (event: GatewayTaskCompleteEvent) => {
-      const calEvent = fromTaskCompleteEvent(event, config.defaults);
-      sink.addEvent(calEvent);
+      // Individual event based on mode
+      if (tcConfig.mode !== 'off') {
+        const calEvent = fromTaskCompleteEvent(event, config.defaults);
+        if (tcConfig.mode === 'timed') {
+          calEvent.allDay = false;
+          calEvent.duration = 15;
+        }
+        sink.addEvent(calEvent);
+      }
+
+      // Daily aggregate
+      if (tcConfig.aggregate === 'daily') {
+        const agentId = event.agentId || 'unknown';
+        const dateStr = event.completedAt.toISOString().slice(0, 10);
+        const aggUid = `daily-tasks-${agentId}-${dateStr}`;
+        const existing = sink.getEvent(aggUid);
+
+        if (existing) {
+          // Parse existing tasks from description and append new one
+          const existingTasks = (existing.description || '')
+            .split('\n')
+            .filter(l => l.startsWith('- '))
+            .map(l => ({ summary: l.slice(2) }));
+          existingTasks.push({ summary: event.summary });
+          const updated = buildDailyTaskAggregate(agentId, event.completedAt, existingTasks);
+          sink.updateEvent(aggUid, {
+            title: updated.title,
+            description: updated.description,
+          });
+        } else {
+          const aggEvent = buildDailyTaskAggregate(agentId, event.completedAt, [{ summary: event.summary }]);
+          sink.addEvent(aggEvent);
+        }
+      }
     });
   }
 

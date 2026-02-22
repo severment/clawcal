@@ -54,6 +54,10 @@ const DEFAULT_CONFIG: CalendarConfig = {
     content_drafts: true,
     reminders: true,
   },
+  taskCompletions: {
+    mode: 'all_day',
+    aggregate: 'none',
+  },
   defaults: {
     analytics_checkin_offsets: ['24h', '48h', '7d'],
     event_duration_minutes: 15,
@@ -178,6 +182,7 @@ export function register(api: PluginApi): FeedManager {
         allDay: { type: 'boolean', description: 'Whether this is an all-day event' },
         agent: { type: 'string', description: 'Agent ID (e.g. "marketing-agent"). Required for per-agent feeds.' },
         project: { type: 'string', description: 'Project or workspace name' },
+        url: { type: 'string', description: 'URL to attach to the event (opens in calendar app)' },
         alertMinutes: { type: 'number', description: 'Alert N minutes before event (overrides category default)' },
       },
       required: ['title', 'date', 'agent'],

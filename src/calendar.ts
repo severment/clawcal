@@ -160,6 +160,10 @@ export class CalendarManager {
       lines.push(`X-OPENCLAW-PROJECT:${escapeICS(event.project)}`);
     }
 
+    if (event.url) {
+      lines.push(`URL:${event.url}`);
+    }
+
     if (event.alerts && event.alerts.length > 0) {
       for (const alert of event.alerts) {
         lines.push('BEGIN:VALARM');
@@ -305,6 +309,9 @@ export class CalendarManager {
           break;
         case 'X-OPENCLAW-PROJECT':
           current.project = unescapeICS(value);
+          break;
+        case 'URL':
+          current.url = value;
           break;
       }
     }

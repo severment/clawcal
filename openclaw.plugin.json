@@ -26,6 +26,14 @@
           "calendarSource": { "type": "string" }
         }
       },
+      "taskCompletions": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "mode": { "type": "string", "enum": ["all_day", "timed", "off"] },
+          "aggregate": { "type": "string", "enum": ["daily", "none"] }
+        }
+      },
       "events": {
         "type": "object",
         "additionalProperties": false,

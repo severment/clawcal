@@ -6,7 +6,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-plugin-FF6B00.svg)](#)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#)
-[![105 Tests](https://img.shields.io/badge/tests-105_passing-brightgreen.svg)](#)
+[![123 Tests](https://img.shields.io/badge/tests-123_passing-brightgreen.svg)](#)
 
 Your agent schedules posts, plans launches, and completes tasks around the clock. The only way to see what it's doing is to check the terminal or dig through session logs. ClawCal puts all of that into your calendar. Subscribe once, see everything.
 
@@ -124,8 +124,8 @@ Configure which feeds to generate:
 
 ```
 "I've scheduled the Show HN post for Tuesday at 9am ET."
-> clawcal_schedule(title="Show HN: utmgate", date="2025-02-25T09:00:00-05:00", category="launch")
-> event appears on your calendar with a 1-hour and 15-minute alert
+> clawcal_schedule(title="Show HN: utmgate", date="2025-02-25T09:00:00-05:00", category="launch", url="https://news.ycombinator.com/submitlink")
+> event appears on your calendar with a 1-hour and 15-minute alert and a clickable link
 ```
 
 ### Architecture
@@ -225,6 +225,44 @@ Override defaults per event type:
 }
 ```
 
+## Task completion aggregation
+
+A productive agent can complete 30+ tasks per week, each creating a separate all-day calendar event. ClawCal can aggregate these into a single daily summary per agent.
+
+```json5
+// ~/.openclaw/openclaw.json
+{
+  plugins: {
+    entries: {
+      clawcal: {
+        enabled: true,
+        config: {
+          taskCompletions: {
+            mode: "off",           // skip individual events
+            aggregate: "daily"     // one summary per agent per day
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+This produces events like **"Shipped 3 tasks -- dev-agent"** with a bullet-point description listing each completed task. The aggregate event updates in place as tasks complete throughout the day.
+
+| `mode` | Behavior |
+|---|---|
+| `all_day` | Individual all-day event per task (default) |
+| `timed` | Individual 15-minute event per task |
+| `off` | No individual events |
+
+| `aggregate` | Behavior |
+|---|---|
+| `none` | No aggregation (default) |
+| `daily` | One summary event per agent per day |
+
+Both settings work independently. Set `mode: "all_day"` with `aggregate: "daily"` to get both individual events and a daily summary.
+
 ## Inspecting runtime config
 
 ```
@@ -245,6 +283,8 @@ curl -u ":$(openclaw config get gateway.auth.token)" http://localhost:18789/claw
 | `feeds.per_agent` | boolean | `true` | Generate per-agent feeds |
 | `localPush.enabled` | boolean | `true` | Push events to local Apple Calendar (macOS only) |
 | `localPush.calendarSource` | string | `"iCloud"` | Which macOS Calendar account to target (iCloud, Gmail, Exchange, etc.) |
+| `taskCompletions.mode` | string | `"all_day"` | Per-task event style: `all_day`, `timed`, or `off` |
+| `taskCompletions.aggregate` | string | `"none"` | Daily rollup: `daily` or `none` |
 | `events.scheduled_posts` | boolean | `true` | Track scheduled social posts |
 | `events.launch_sequences` | boolean | `true` | Track multi-step launch plans |
 | `events.task_completions` | boolean | `true` | Track completed tasks |
@@ -274,8 +314,9 @@ clawcal/
 │   ├── local-push.ts      <-- macOS Apple Calendar push via osascript
 │   └── types.ts           <-- type definitions
 ├── tests/
-│   ├── calendar.test.ts   <-- iCal output, alerts, persistence (22 tests)
-│   ├── events.test.ts     <-- event mapping, alert defaults (23 tests)
+│   ├── calendar.test.ts   <-- iCal output, alerts, URL, persistence (25 tests)
+│   ├── events.test.ts     <-- event mapping, alert defaults, aggregation (29 tests)
+│   ├── aggregation.test.ts <-- task completion aggregation flow (9 tests)
 │   ├── feed-manager.test.ts <-- multi-feed routing (11 tests)
 │   ├── local-push.test.ts <-- local push, AppleScript gen, caching (25 tests)
 │   ├── config.test.ts     <-- deep merge config (8 tests)

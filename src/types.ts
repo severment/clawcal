@@ -14,6 +14,7 @@ export interface CalendarEvent {
   category?: string;
   agent?: string;
   project?: string;
+  url?: string;
   status?: EventStatus;
   sequence?: number;
   rrule?: string;
@@ -32,12 +33,18 @@ export interface LocalPushConfig {
   calendarSource: string;  // "iCloud", "Gmail", "Exchange", etc.
 }
 
+export interface TaskCompletionsConfig {
+  mode: 'all_day' | 'timed' | 'off';
+  aggregate: 'daily' | 'none';
+}
+
 export interface CalendarConfig {
   file: string;             // legacy single-file path (used when feeds not configured)
   file_directory: string;   // directory for multi-feed output
   feeds: FeedsConfig;
   localPush: LocalPushConfig;
   events: EventTypeConfig;
+  taskCompletions: TaskCompletionsConfig;
   defaults: DefaultsConfig;
   cleanup: CleanupConfig;
 }
@@ -82,6 +89,7 @@ export interface ScheduleToolParams {
   allDay?: boolean;
   agent?: string;
   project?: string;
+  url?: string;
   alertMinutes?: number;
 }
 
