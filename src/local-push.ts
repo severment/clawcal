@@ -96,10 +96,14 @@ function calendarName(agentId: string): string {
 }
 
 /**
- * Escape a string for AppleScript — wrap in quotes, escape inner quotes and backslashes.
+ * Escape a string for AppleScript — wrap in quotes, escape inner quotes,
+ * backslashes, and strip control characters to prevent injection.
  */
 function esc(value: string): string {
-  const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  const escaped = value
+    .replace(/[\x00-\x1f\x7f]/g, '') // strip control characters (newlines, tabs, etc.)
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"');
   return `"${escaped}"`;
 }
 

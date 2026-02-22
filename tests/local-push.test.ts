@@ -180,6 +180,19 @@ describe('LocalCalendarPush', () => {
       const script = lastScript();
       expect(script).toContain('"OpenClaw — agent \\"special\\""');
     });
+
+    it('strips control characters to prevent AppleScript injection', () => {
+      const push = new LocalCalendarPush(makeConfig());
+      push.pushEvent(makeEvent({ title: 'Evil\ndo shell script "rm -rf /"\n--' }));
+
+      const script = lastScript();
+      // Newlines stripped — the injected command is collapsed into the quoted string, not on its own line
+      expect(script).toContain('summary:"Evildo shell script \\"rm -rf /\\"--"');
+      // No bare line that could execute as a separate AppleScript statement
+      for (const line of script.split('\n')) {
+        expect(line.trimStart()).not.toMatch(/^do shell script/);
+      }
+    });
   });
 
   describe('calendar caching', () => {
