@@ -48,7 +48,7 @@ clawcal/
 │   ├── calendar.ts       ← iCal generation and file management
 │   ├── feed-manager.ts   ← multi-feed management (combined + per-agent)
 │   ├── events.ts         ← maps OpenClaw events to calendar events
-│   ├── local-push.ts     ← macOS Apple Calendar push via osascript
+│   ├── local-push.ts     ← macOS Apple Calendar push via osascript (configurable calendar source)
 │   └── types.ts          ← type definitions
 ├── README.md
 ├── CONTRIBUTING.md

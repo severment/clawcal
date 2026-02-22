@@ -29,6 +29,7 @@ export interface FeedsConfig {
 
 export interface LocalPushConfig {
   enabled: boolean;
+  calendarSource: string;  // "iCloud", "Gmail", "Exchange", etc.
 }
 
 export interface CalendarConfig {

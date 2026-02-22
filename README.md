@@ -156,8 +156,11 @@ This happens automatically on macOS alongside the ICS feeds. On Linux the local 
 extensions:
   clawcal:
     localPush:
-      enabled: true   # default, no-ops on non-macOS
+      enabled: true          # default, no-ops on non-macOS
+      calendarSource: iCloud  # which macOS Calendar account to target
 ```
+
+By default, events are pushed to the **iCloud** calendar source, which syncs to all Apple devices. If you use a different calendar account (Gmail, Exchange, etc.), set `calendarSource` to match the account name shown in Calendar.app's sidebar.
 
 | Event type | Default alerts |
 |---|---|
@@ -190,6 +193,7 @@ extensions:
 | `feeds.combined` | boolean | `true` | Generate combined all-agents feed |
 | `feeds.per_agent` | boolean | `true` | Generate per-agent feeds |
 | `localPush.enabled` | boolean | `true` | Push events to local Apple Calendar (macOS only) |
+| `localPush.calendarSource` | string | `"iCloud"` | Which macOS Calendar account to target (iCloud, Gmail, Exchange, etc.) |
 | `events.scheduled_posts` | boolean | `true` | Track scheduled social posts |
 | `events.launch_sequences` | boolean | `true` | Track multi-step launch plans |
 | `events.task_completions` | boolean | `true` | Track completed tasks |

@@ -43,6 +43,7 @@ const DEFAULT_CONFIG: CalendarConfig = {
   },
   localPush: {
     enabled: true,
+    calendarSource: 'iCloud',
   },
   events: {
     scheduled_posts: true,
@@ -79,7 +80,7 @@ export function register(api: PluginApi, userConfig?: Partial<CalendarConfig>): 
   const config: CalendarConfig = userConfig ? mergeConfig(DEFAULT_CONFIG, userConfig) : DEFAULT_CONFIG;
   const directory = api.resolvePath(config.file_directory);
 
-  const localPush = new LocalCalendarPush(config.localPush.enabled);
+  const localPush = new LocalCalendarPush(config.localPush);
   const feeds = new FeedManager(directory, config.feeds, localPush);
 
   if (!config.enabled) {
