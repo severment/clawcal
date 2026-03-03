@@ -28,8 +28,7 @@ interface PluginApi {
     };
   };
   pluginConfig?: Partial<CalendarConfig>;
-  registerHttpRoute(params: { path: string; handler: (req: IncomingMessage, res: ServerResponse) => void }): void;
-  registerHttpHandler(handler: (req: IncomingMessage, res: ServerResponse) => boolean | Promise<boolean>): void;
+  registerHttpRoute(params: { path: string; auth?: string; match?: string; handler: (req: IncomingMessage, res: ServerResponse) => void }): void;
   registerTool(tool: any): void;
   registerHook(events: string | string[], handler: (data: any) => void): void;
   resolvePath(input: string): string;
@@ -114,31 +113,36 @@ export function register(api: PluginApi): FeedManager {
     });
   }
 
-  // Per-agent feeds + feed listing via raw HTTP handler (no param routes)
+  // Per-agent feeds + feed listing
   if (config.feeds.per_agent) {
-    api.registerHttpHandler((req, res) => {
-      const url = req.url || '';
+    // /clawcal/feed/<agentId>.ics
+    api.registerHttpRoute({
+      path: '/clawcal/feed',
+      match: 'prefix',
+      handler: (req, res) => {
+        const url = req.url || '';
+        const agentMatch = url.match(/^\/clawcal\/feed\/([^/]+)\.ics$/);
+        if (!agentMatch) return;
 
-      // /clawcal/feed/<agentId>.ics
-      const agentMatch = url.match(/^\/clawcal\/feed\/([^/]+)\.ics$/);
-      if (agentMatch) {
-        if (!checkAuth(req, res, authConfig)) return true;
+        if (!checkAuth(req, res, authConfig)) return;
 
         const agentId = decodeURIComponent(agentMatch[1]);
         const agentFeed = feeds.getAgentFeed(agentId);
         if (!agentFeed) {
           res.statusCode = 404;
           res.end(`No feed found for agent "${agentId}"`);
-          return true;
+          return;
         }
 
         serveICS(res, agentFeed.toICS(), `${agentId}.ics`);
-        return true;
-      }
+      },
+    });
 
-      // /clawcal/feeds
-      if (url === '/clawcal/feeds') {
-        if (!checkAuth(req, res, authConfig)) return true;
+    // /clawcal/feeds
+    api.registerHttpRoute({
+      path: '/clawcal/feeds',
+      handler: (req, res) => {
+        if (!checkAuth(req, res, authConfig)) return;
 
         const agents = feeds.getAgentIds();
         const response = {
@@ -150,10 +154,7 @@ export function register(api: PluginApi): FeedManager {
         };
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(response, null, 2));
-        return true;
-      }
-
-      return false; // not our route
+      },
     });
   }
 
