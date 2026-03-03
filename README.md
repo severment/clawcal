@@ -13,6 +13,10 @@ Your agent schedules posts, plans launches, and completes tasks around the clock
 
 Not a dashboard. Not a web app. Your calendar — the one you already have open.
 
+## Requirements
+
+- **OpenClaw v2026.3.2** or later (ClawCal v0.1.9+ uses `registerHttpRoute` which replaced the removed `registerHttpHandler` API)
+
 ## Quick start
 
 ### 1. Install
