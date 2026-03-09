@@ -7,7 +7,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-plugin-FF6B00.svg)](#)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#)
-[![141 Tests](https://img.shields.io/badge/tests-141_passing-brightgreen.svg)](#)
+[![143 Tests](https://img.shields.io/badge/tests-143_passing-brightgreen.svg)](#)
 
 Your agent schedules posts, plans launches, and completes tasks around the clock. The only way to see what it's doing is to check the terminal or dig through session logs. ClawCal puts all of that into your calendar. Subscribe once, see everything.
 
@@ -15,7 +15,8 @@ Not a dashboard. Not a web app. Your calendar — the one you already have open.
 
 ## Requirements
 
-- **OpenClaw v2026.3.2** or later (ClawCal v0.1.9+ uses `registerHttpRoute` which replaced the removed `registerHttpHandler` API)
+- **OpenClaw v2026.3.2** or later (ClawCal uses `registerHttpRoute` which replaced the removed `registerHttpHandler` API)
+- If upgrading OpenClaw to **v2026.3.7+** and you have both `gateway.auth.token` and `gateway.auth.password` configured, you must set `gateway.auth.mode` explicitly (see [OpenClaw v2026.3.7 release notes](https://github.com/steipete/openclaw/releases/tag/v2026.3.7))
 
 ## Quick start
 
@@ -358,7 +359,7 @@ clawcal/
 │   ├── feed-manager.test.ts <-- multi-feed routing (11 tests)
 │   ├── local-push.test.ts <-- local push, AppleScript gen, caching (26 tests)
 │   ├── config.test.ts     <-- deep merge config (8 tests)
-│   └── auth.test.ts       <-- token, password, proxy auth, fail-closed (18 tests)
+│   └── auth.test.ts       <-- token, password, proxy auth, SecretRef, fail-closed (20 tests)
 ├── README.md
 ├── CONTRIBUTING.md
 └── LICENSE

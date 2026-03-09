@@ -223,6 +223,13 @@ export function checkAuth(
   }
 
   if (authConfig.mode === 'token') {
+    // SecretRef objects may leak through if the gateway hasn't resolved them;
+    // fail closed rather than silently bypassing auth.
+    if (authConfig.token && typeof authConfig.token !== 'string') {
+      res.statusCode = 500;
+      res.end('Server misconfiguration');
+      return false;
+    }
     const token = authConfig.token?.trim();
     if (!token) return true; // no token set, nothing to check
 
@@ -246,6 +253,11 @@ export function checkAuth(
   }
 
   if (authConfig.mode === 'password') {
+    if (authConfig.password && typeof authConfig.password !== 'string') {
+      res.statusCode = 500;
+      res.end('Server misconfiguration');
+      return false;
+    }
     const password = authConfig.password?.trim();
     if (!password) return true;
 

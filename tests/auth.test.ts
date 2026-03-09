@@ -173,6 +173,22 @@ describe('checkAuth', () => {
     })).toBe(true);
   });
 
+  // --- SecretRef fail-closed ---
+
+  it('rejects when token is an unresolved SecretRef object', () => {
+    const req = mockReq({ authorization: 'Bearer secret123' });
+    const res = mockRes();
+    expect(checkAuth(req, res, { mode: 'token', token: { $env: 'MY_TOKEN' } as any })).toBe(false);
+    expect(res._status).toBe(500);
+  });
+
+  it('rejects when password is an unresolved SecretRef object', () => {
+    const req = mockReq({ authorization: basicAuth('user', 'mypass') });
+    const res = mockRes();
+    expect(checkAuth(req, res, { mode: 'password', password: { $env: 'MY_PASS' } as any })).toBe(false);
+    expect(res._status).toBe(500);
+  });
+
   // --- Fail-closed on unknown mode ---
 
   it('rejects requests with unknown auth mode (fail-closed)', () => {
