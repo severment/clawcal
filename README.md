@@ -17,6 +17,7 @@ Not a dashboard. Not a web app. Your calendar — the one you already have open.
 
 - **OpenClaw v2026.3.2** or later (ClawCal uses `registerHttpRoute` which replaced the removed `registerHttpHandler` API)
 - If upgrading OpenClaw to **v2026.3.7+** and you have both `gateway.auth.token` and `gateway.auth.password` configured, you must set `gateway.auth.mode` explicitly (see [OpenClaw v2026.3.7 release notes](https://github.com/openclaw/openclaw/releases/tag/v2026.3.7))
+- **OpenClaw v2026.3.12+**: Workspace plugins now require explicit trust before loading. If you installed ClawCal as a workspace plugin (in a project's `.openclaw/plugins/` directory), you'll be prompted to trust it on first load after upgrading. Global installs via `openclaw plugins install clawcal` are not affected.
 
 ## Quick start
 
