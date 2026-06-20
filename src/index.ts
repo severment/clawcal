@@ -28,9 +28,9 @@ interface PluginApi {
     };
   };
   pluginConfig?: Partial<CalendarConfig>;
-  registerHttpRoute(params: { path: string; auth?: string; match?: string; handler: (req: IncomingMessage, res: ServerResponse) => void }): void;
+  registerHttpRoute(params: { path: string; auth: 'gateway' | 'plugin'; match?: string; handler: (req: IncomingMessage, res: ServerResponse) => void }): void;
   registerTool(tool: any): void;
-  registerHook(events: string | string[], handler: (data: any) => void): void;
+  registerHook(events: string | string[], handler: (data: any) => void, opts: { name: string; description?: string }): void;
   resolvePath(input: string): string;
 }
 
@@ -99,6 +99,7 @@ export function register(api: PluginApi): FeedManager {
   if (config.feeds.combined) {
     api.registerHttpRoute({
       path: '/clawcal/feed.ics',
+      auth: 'plugin',
       handler: (req, res) => {
         if (!checkAuth(req, res, authConfig)) return;
 
@@ -118,6 +119,7 @@ export function register(api: PluginApi): FeedManager {
     // /clawcal/feed/<agentId>.ics
     api.registerHttpRoute({
       path: '/clawcal/feed',
+      auth: 'plugin',
       match: 'prefix',
       handler: (req, res) => {
         const url = req.url || '';
@@ -141,6 +143,7 @@ export function register(api: PluginApi): FeedManager {
     // /clawcal/feeds
     api.registerHttpRoute({
       path: '/clawcal/feeds',
+      auth: 'plugin',
       handler: (req, res) => {
         if (!checkAuth(req, res, authConfig)) return;
 
@@ -161,6 +164,7 @@ export function register(api: PluginApi): FeedManager {
   // Config inspection route
   api.registerHttpRoute({
     path: '/clawcal/config',
+    auth: 'plugin',
     handler: (req, res) => {
       if (!checkAuth(req, res, authConfig)) return;
       res.setHeader('Content-Type', 'application/json');

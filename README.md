@@ -16,8 +16,9 @@ Not a dashboard. Not a web app. Your calendar — the one you already have open.
 ## Requirements
 
 - **OpenClaw v2026.3.2** or later (ClawCal uses `registerHttpRoute` which replaced the removed `registerHttpHandler` API)
+- **Tested and verified through OpenClaw v2026.6.6** (latest stable) by booting a real gateway and curling the feed. Several plugin-API changes since v2026.3.12 are handled inside ClawCal, so **upgrading needs no action from you**: required HTTP-route `auth`, named event hooks (`registerHook` now needs a name), manifest `contracts.tools` (v2026.5.2+), and manifest `activation.onStartup` (v2026.4.27+). See [CHANGELOG.md](CHANGELOG.md) for the full per-version compatibility log.
 - If upgrading OpenClaw to **v2026.3.7+** and you have both `gateway.auth.token` and `gateway.auth.password` configured, you must set `gateway.auth.mode` explicitly (see [OpenClaw v2026.3.7 release notes](https://github.com/openclaw/openclaw/releases/tag/v2026.3.7))
-- **OpenClaw v2026.3.12+**: Workspace plugins now require explicit trust before loading. If you installed ClawCal as a workspace plugin (in a project's `.openclaw/plugins/` directory), you'll be prompted to trust it on first load after upgrading. Global installs via `openclaw plugins install clawcal` are not affected.
+- **OpenClaw v2026.3.12+**: Workspace plugins now require explicit trust before loading. If you installed ClawCal as a workspace plugin (in a project's `.openclaw/plugins/` directory), you'll be prompted to trust it on first load after upgrading. Global installs via `openclaw plugins install clawcal` are not affected. In production, set `plugins.allow: ["clawcal"]` to explicitly trust it (the gateway warns when `plugins.allow` is empty).
 
 ## Quick start
 
@@ -186,7 +187,7 @@ Zero runtime dependencies. iCal is a text format — generating it requires no l
 
 ## Auth
 
-ClawCal inherits the gateway's auth configuration. Every feed route is protected — no extra setup.
+ClawCal reuses the gateway's auth credentials — it reads `gateway.auth` from your config and enforces the same mode on every feed route, so there's no separate password to manage.
 
 | Gateway auth mode | How it works for calendar feeds |
 |---|---|
@@ -196,6 +197,8 @@ ClawCal inherits the gateway's auth configuration. Every feed route is protected
 | **None** | Feeds served openly (local-only setups) |
 
 Apple Calendar, Google Calendar, and every major calendar app support Basic Auth natively — you get prompted for credentials once when subscribing.
+
+> **Important — configure auth in your config, not just on the CLI.** ClawCal reads `gateway.auth` from the gateway **config** (set it with `openclaw configure` or in your config file). It does **not** see the `openclaw gateway run --auth …` *command-line flag* — that protects the gateway's WebSocket but leaves `gateway.auth` empty, so the feed would serve openly. If your config has no `gateway.auth`, the feed is unauthenticated. Quick check: `curl -s -o /dev/null -w "%{http_code}\n" http://localhost:PORT/clawcal/feed.ics` with no credentials should return `401` when auth is configured (and `200` with the token).
 
 Running on a VPS? Put the gateway behind HTTPS. ClawCal doesn't add its own auth layer because the gateway already has one.
 

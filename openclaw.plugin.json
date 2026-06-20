@@ -1,5 +1,11 @@
 {
   "id": "clawcal",
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "tools": ["clawcal_schedule"]
+  },
   "configSchema": {
     "type": "object",
     "additionalProperties": false,

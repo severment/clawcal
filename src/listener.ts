@@ -5,7 +5,11 @@ import { CalendarConfig, CalendarEvent, GatewayScheduleEvent, GatewayTaskComplet
  * Minimal plugin API interface for hook registration.
  */
 interface HookSource {
-  registerHook(events: string | string[], handler: (data: any) => void): void;
+  registerHook(
+    events: string | string[],
+    handler: (data: any) => void,
+    opts: { name: string; description?: string },
+  ): void;
 }
 
 /**
@@ -45,7 +49,7 @@ export function registerListeners(api: HookSource, sink: EventSink, config: Cale
           sink.addEvent(checkin);
         }
       }
-    });
+    }, { name: 'clawcal:agent-schedule' });
   }
 
   // Agent completed a task
@@ -87,7 +91,7 @@ export function registerListeners(api: HookSource, sink: EventSink, config: Cale
           sink.addEvent(aggEvent);
         }
       }
-    });
+    }, { name: 'clawcal:agent-task-complete' });
   }
 
   // Cron/scheduled automation registered
@@ -95,7 +99,7 @@ export function registerListeners(api: HookSource, sink: EventSink, config: Cale
     api.registerHook('cron:register', (event: GatewayCronEvent) => {
       const calEvent = fromCronEvent(event, config.defaults);
       sink.addEvent(calEvent);
-    });
+    }, { name: 'clawcal:cron-register' });
   }
 
   // Agent updated a previously scheduled event
@@ -104,10 +108,10 @@ export function registerListeners(api: HookSource, sink: EventSink, config: Cale
     if (event.newTime) updates.start = event.newTime;
     if (event.status) updates.status = event.status;
     sink.updateEvent(event.id, updates);
-  });
+  }, { name: 'clawcal:agent-schedule-update' });
 
   // Agent cancelled a scheduled event
   api.registerHook('agent:schedule:cancel', (event: GatewayScheduleCancelEvent) => {
     sink.cancelEvent(event.id);
-  });
+  }, { name: 'clawcal:agent-schedule-cancel' });
 }
